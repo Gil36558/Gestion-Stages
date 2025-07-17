@@ -73,11 +73,14 @@ class User extends Authenticatable // implements MustVerifyEmail
     }
 
     /**
-     * 📋 Offres publiées (pour les entreprises) (1-n)
+     * 📋 Offres publiées (pour les entreprises) (1-n via entreprise)
      */
-    public function offres(): HasMany
+    public function offres()
     {
-        return $this->hasMany(Offre::class);
+        if ($this->role === 'entreprise' && $this->entreprise) {
+            return $this->entreprise->offres();
+        }
+        return collect(); // Retourne une collection vide pour les non-entreprises
     }
 
     /**

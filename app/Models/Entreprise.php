@@ -27,6 +27,14 @@ class Entreprise extends Model
     }
 
     /**
+     * Relation avec les candidatures (via les offres)
+     */
+    public function candidatures()
+    {
+        return $this->hasManyThrough(Candidature::class, Offre::class);
+    }
+
+    /**
      * Relation avec l'utilisateur propriétaire de l'entreprise
      */
     public function user(): BelongsTo

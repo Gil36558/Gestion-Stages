@@ -60,10 +60,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::prefix('candidatures')->group(function () {
             Route::get('/mes-candidatures', [CandidatureController::class, 'index'])->name('candidatures.index');
             Route::post('/store', [CandidatureController::class, 'store'])->name('candidatures.store');
+            Route::delete('/{candidature}', [CandidatureController::class, 'destroy'])->name('candidatures.destroy');
         });
 
-        Route::get('/etudiant/documents', [DocumentController::class, 'index'])->name('etudiant.documents');
-        Route::post('/etudiant/documents', [DocumentController::class, 'store'])->name('etudiant.documents.store');
+        // Route::get('/etudiant/documents', [DocumentController::class, 'index'])->name('etudiant.documents');
+        // Route::post('/etudiant/documents', [DocumentController::class, 'store'])->name('etudiant.documents.store');
     });
 
     /*
@@ -108,4 +109,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/offres/{offre}', [OffreController::class, 'show'])->name('offres.show');
     Route::get('/entreprises', [EntrepriseController::class, 'index'])->name('entreprise.index');
     Route::get('/entreprises/{entreprise}', [EntrepriseController::class, 'show'])->name('entreprise.show');
+    
+    // Routes candidatures (communes mais avec vérifications dans le contrôleur)
+    Route::get('/candidatures/{candidature}', [CandidatureController::class, 'show'])->name('candidatures.show');
+    Route::get('/candidatures/{candidature}/download/{type}', [CandidatureController::class, 'downloadFile'])->name('candidatures.download');
 });
