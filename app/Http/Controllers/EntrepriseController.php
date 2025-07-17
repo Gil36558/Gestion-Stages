@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Entreprise;
 use App\Models\Offre;
 use App\Models\Candidature;
+use App\Models\DemandeStage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -137,17 +138,25 @@ class EntrepriseController extends Controller
     }
 
     /**
-     * Gestion des candidatures reçues
+     * Gestion des candidatures et demandes reçues
      */
     public function candidatures()
     {
         $entreprise = auth()->user()->entreprise;
+        
+        // Candidatures aux offres
         $candidatures = $entreprise->candidatures()
-                                ->with(['offre', 'etudiant.user'])
+                                ->with(['offre', 'user'])
                                 ->latest()
-                                ->paginate(10);
+                                ->paginate(5, ['*'], 'candidatures');
 
-        return view('entreprise.candidatures', compact('candidatures'));
+        // Demandes de stage directes
+        $demandesStages = $entreprise->demandesStages()
+                                   ->with(['etudiants'])
+                                   ->latest()
+                                   ->paginate(5, ['*'], 'demandes');
+
+        return view('entreprise.candidatures', compact('candidatures', 'demandesStages'));
     }
 
     /**
@@ -185,9 +194,53 @@ class EntrepriseController extends Controller
     {
         $this->authorize('update', $candidature->offre->entreprise);
         
-        $candidature->update(['statut' => 'refusee']);
+        $validated = $request->validate([
+            'motif_refus' => 'nullable|string|max:500'
+        ]);
+        
+        $candidature->update([
+            'statut' => 'refusee',
+            'motif_refus' => $validated['motif_refus'] ?? null
+        ]);
         
         return back()->with('success', 'Candidature rejetée');
+    }
+
+    /**
+     * Approuve une demande de stage
+     */
+    public function approveDemandeStage(Request $request, DemandeStage $demande)
+    {
+        // Vérifier que la demande appartient à l'entreprise de l'utilisateur connecté
+        if ($demande->entreprise_id !== auth()->user()->entreprise->id) {
+            abort(403, 'Accès non autorisé');
+        }
+        
+        $demande->update(['statut' => 'validée']);
+        
+        return back()->with('success', 'Demande de stage approuvée avec succès');
+    }
+
+    /**
+     * Rejette une demande de stage
+     */
+    public function rejectDemandeStage(Request $request, DemandeStage $demande)
+    {
+        // Vérifier que la demande appartient à l'entreprise de l'utilisateur connecté
+        if ($demande->entreprise_id !== auth()->user()->entreprise->id) {
+            abort(403, 'Accès non autorisé');
+        }
+        
+        $validated = $request->validate([
+            'motif_refus' => 'nullable|string|max:500'
+        ]);
+        
+        $demande->update([
+            'statut' => 'refusée',
+            'motif_refus' => $validated['motif_refus'] ?? null
+        ]);
+        
+        return back()->with('success', 'Demande de stage rejetée');
     }
 
     public function show(Entreprise $entreprise)

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Candidature;
 use App\Models\DemandeStage;
 use App\Models\Document;
+use App\Models\Offre;
 use Illuminate\Support\Facades\Auth;
 
 class EtudiantController extends Controller
@@ -17,28 +18,57 @@ class EtudiantController extends Controller
     {
         $user = Auth::user();
 
-        // Statistiques globales
-        $stats = [
-            'envoyees'    => $user->candidatures()->count(),
-            'en_attente'  => $user->candidatures()->where('statut', 'en attente')->count(),
-            'acceptees'   => $user->candidatures()->where('statut', 'acceptée')->count(),
-            'documents'   => $user->documents()->count(),
+        // Statistiques des candidatures aux offres
+        $candidatureStats = [
+            'total'      => $user->candidatures()->count(),
+            'en_attente' => $user->candidatures()->where('statut', 'en attente')->count(),
+            'acceptees'  => $user->candidatures()->where('statut', 'acceptée')->count(),
+            'refusees'   => $user->candidatures()->where('statut', 'refusée')->count(),
         ];
 
-        // Candidatures récentes (avec relations vers offre et entreprise)
+        // Statistiques des demandes de stage directes
+        $demandeStats = [
+            'total'      => $user->demandesStages()->count(),
+            'en_attente' => $user->demandesStages()->where('statut', 'en attente')->count(),
+            'validees'   => $user->demandesStages()->where('statut', 'validée')->count(),
+            'refusees'   => $user->demandesStages()->where('statut', 'refusée')->count(),
+        ];
+
+        // Statistiques globales
+        $stats = [
+            'candidatures' => $candidatureStats,
+            'demandes'     => $demandeStats,
+            'documents'    => $user->documents()->count(),
+        ];
+
+        // Candidatures récentes aux offres
         $recentCandidatures = $user->candidatures()
             ->with(['offre.entreprise'])
             ->latest()
             ->take(5)
             ->get();
 
-        // Demandes de stage récentes (si la relation existe)
+        // Demandes de stage récentes
         $recentDemandes = $user->demandesStages()
-            ->with('entreprise') // si tu as une relation entreprise dans DemandeStage
+            ->with('entreprise')
             ->latest()
             ->take(5)
             ->get();
 
-        return view('etudiant.dashboard', compact('stats', 'recentCandidatures', 'recentDemandes'));
+        // Offres disponibles pour candidater
+        $offresDisponibles = Offre::with('entreprise')
+            ->whereDoesntHave('candidatures', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->latest()
+            ->take(6)
+            ->get();
+
+        return view('etudiant.dashboard', compact(
+            'stats', 
+            'recentCandidatures', 
+            'recentDemandes', 
+            'offresDisponibles'
+        ));
     }
 }

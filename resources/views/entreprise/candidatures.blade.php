@@ -329,10 +329,25 @@
         </div>
     @endif
 
-    <!-- Candidatures -->
-    @if($candidatures->count() > 0)
-        <div class="candidatures-grid">
-            @foreach($candidatures as $candidature)
+    <!-- Onglets pour séparer candidatures et demandes -->
+    <div class="mb-6" data-aos="fade-up">
+        <div class="flex border-b border-gray-200">
+            <button onclick="showTab('candidatures')" id="tab-candidatures" 
+                    class="px-6 py-3 font-medium text-sm border-b-2 border-blue-500 text-blue-600 bg-blue-50">
+                Candidatures aux offres ({{ $candidatures->count() }})
+            </button>
+            <button onclick="showTab('demandes')" id="tab-demandes" 
+                    class="px-6 py-3 font-medium text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+                Demandes directes ({{ $demandesStages->count() }})
+            </button>
+        </div>
+    </div>
+
+    <!-- Candidatures aux offres -->
+    <div id="content-candidatures" class="tab-content">
+        @if($candidatures->count() > 0)
+            <div class="candidatures-grid">
+                @foreach($candidatures as $candidature)
                 <div class="candidature-card" data-aos="fade-up" data-aos-delay="{{ $loop->index * 100 }}">
                     <div class="candidature-header">
                         <div class="candidat-info">
@@ -423,27 +438,165 @@
                         </a>
                     </div>
                 </div>
-            @endforeach
-        </div>
+                @endforeach
+            </div>
 
-        <!-- Pagination -->
-        @if($candidatures->hasPages())
-            <div class="pagination-wrapper" data-aos="fade-up" data-aos-delay="400">
-                {{ $candidatures->links() }}
+            <!-- Pagination -->
+            @if($candidatures->hasPages())
+                <div class="pagination-wrapper" data-aos="fade-up" data-aos-delay="400">
+                    {{ $candidatures->appends(['demandes' => request('demandes')])->links() }}
+                </div>
+            @endif
+        @else
+            <!-- État vide -->
+            <div class="empty-state" data-aos="fade-up" data-aos-delay="200">
+                <i class="fas fa-inbox"></i>
+                <h3 class="text-xl font-semibold text-gray-700 mb-2">Aucune candidature reçue</h3>
+                <p class="mb-4">Vous n'avez pas encore reçu de candidatures pour vos offres de stage.</p>
+                <a href="{{ route('entreprise.offres.create') }}" class="btn-action btn-accept">
+                    <i class="fas fa-plus mr-2"></i>
+                    Publier une offre
+                </a>
             </div>
         @endif
-    @else
-        <!-- État vide -->
-        <div class="empty-state" data-aos="fade-up" data-aos-delay="200">
-            <i class="fas fa-inbox"></i>
-            <h3 class="text-xl font-semibold text-gray-700 mb-2">Aucune candidature reçue</h3>
-            <p class="mb-4">Vous n'avez pas encore reçu de candidatures pour vos offres de stage.</p>
-            <a href="{{ route('entreprise.offres.create') }}" class="btn-action btn-accept">
-                <i class="fas fa-plus mr-2"></i>
-                Publier une offre
-            </a>
-        </div>
-    @endif
+    </div>
+
+    <!-- Demandes de stage directes -->
+    <div id="content-demandes" class="tab-content hidden">
+        @if($demandesStages->count() > 0)
+            <div class="candidatures-grid">
+                @foreach($demandesStages as $demande)
+                    <div class="candidature-card" data-aos="fade-up" data-aos-delay="{{ $loop->index * 100 }}">
+                        <div class="candidature-header">
+                            <div class="candidat-info">
+                                @if($demande->etudiants->count() > 0)
+                                    @php $etudiant = $demande->etudiants->first() @endphp
+                                    <h3>{{ $etudiant->prenom }} {{ $etudiant->name }}</h3>
+                                    <p><i class="fas fa-envelope mr-1"></i> {{ $etudiant->email }}</p>
+                                @else
+                                    <h3>Demande anonyme</h3>
+                                    <p><i class="fas fa-envelope mr-1"></i> {{ $demande->email ?? 'Email non fourni' }}</p>
+                                @endif
+                                @if($demande->telephone)
+                                    <p><i class="fas fa-phone mr-1"></i> {{ $demande->telephone }}</p>
+                                @endif
+                                @if($demande->etablissement)
+                                    <p><i class="fas fa-university mr-1"></i> {{ $demande->etablissement }}</p>
+                                @endif
+                            </div>
+                            <div class="candidature-status status-{{ str_replace(' ', '_', strtolower($demande->statut)) }}">
+                                {{ ucfirst($demande->statut) }}
+                            </div>
+                        </div>
+
+                        <div class="candidature-content">
+                            <div class="offre-title">
+                                <i class="fas fa-graduation-cap mr-2"></i>
+                                Demande de stage {{ $demande->type }} : {{ $demande->objet }}
+                            </div>
+                            
+                            <p class="text-sm text-gray-500 mb-3">
+                                <i class="fas fa-calendar mr-1"></i>
+                                Période souhaitée : {{ \Carbon\Carbon::parse($demande->periode_debut)->format('d/m/Y') }} 
+                                au {{ \Carbon\Carbon::parse($demande->periode_fin)->format('d/m/Y') }}
+                            </p>
+
+                            @if($demande->objectifs_stage)
+                                <div class="candidature-message">
+                                    <p><strong>Objectifs du stage :</strong></p>
+                                    <p>{{ $demande->objectifs_stage }}</p>
+                                </div>
+                            @endif
+
+                            <!-- Fichiers -->
+                            <div class="candidature-files">
+                                @if($demande->cv)
+                                    <a href="{{ Storage::url($demande->cv) }}" 
+                                       class="file-link" target="_blank">
+                                        <i class="fas fa-file-pdf text-red-500"></i>
+                                        Télécharger CV
+                                    </a>
+                                @endif
+                                
+                                @if($demande->lettre_motivation)
+                                    <a href="{{ Storage::url($demande->lettre_motivation) }}" 
+                                       class="file-link" target="_blank">
+                                        <i class="fas fa-file-alt text-blue-500"></i>
+                                        Lettre de motivation
+                                    </a>
+                                @endif
+
+                                @if($demande->portfolio)
+                                    <a href="{{ Storage::url($demande->portfolio) }}" 
+                                       class="file-link" target="_blank">
+                                        <i class="fas fa-folder text-purple-500"></i>
+                                        Portfolio
+                                    </a>
+                                @endif
+                            </div>
+
+                            <!-- Informations supplémentaires -->
+                            @if($demande->competences_techniques || $demande->experiences_professionnelles)
+                                <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 mt-3">
+                                    @if($demande->competences_techniques)
+                                        <p class="text-sm text-gray-700 mb-2">
+                                            <strong>Compétences :</strong> {{ $demande->competences_techniques }}
+                                        </p>
+                                    @endif
+                                    @if($demande->experiences_professionnelles)
+                                        <p class="text-sm text-gray-700">
+                                            <strong>Expériences :</strong> {{ $demande->experiences_professionnelles }}
+                                        </p>
+                                    @endif
+                                </div>
+                            @endif
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="candidature-actions">
+                            @if($demande->statut === 'en attente')
+                                <form method="POST" action="{{ route('entreprise.demandes.approve', $demande) }}" 
+                                      style="display: inline;">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="btn-action btn-accept" 
+                                            onclick="return confirm('Êtes-vous sûr de vouloir accepter cette demande ?')">
+                                        <i class="fas fa-check"></i>
+                                        Accepter
+                                    </button>
+                                </form>
+                                
+                                <button type="button" class="btn-action btn-reject" 
+                                        onclick="showRejectDemandeModal({{ $demande->id }})">
+                                    <i class="fas fa-times"></i>
+                                    Refuser
+                                </button>
+                            @endif
+                            
+                            <a href="{{ route('demandes.show', $demande) }}" class="btn-action btn-view">
+                                <i class="fas fa-eye"></i>
+                                Voir détails
+                            </a>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+
+            <!-- Pagination -->
+            @if($demandesStages->hasPages())
+                <div class="pagination-wrapper" data-aos="fade-up" data-aos-delay="400">
+                    {{ $demandesStages->appends(['candidatures' => request('candidatures')])->links() }}
+                </div>
+            @endif
+        @else
+            <!-- État vide -->
+            <div class="empty-state" data-aos="fade-up" data-aos-delay="200">
+                <i class="fas fa-graduation-cap"></i>
+                <h3 class="text-xl font-semibold text-gray-700 mb-2">Aucune demande de stage reçue</h3>
+                <p class="mb-4">Vous n'avez pas encore reçu de demandes de stage directes.</p>
+            </div>
+        @endif
+    </div>
 </div>
 
 <!-- Modal de refus -->
@@ -485,10 +638,40 @@
         easing: 'ease-out-cubic',
     });
 
+    // Gestion des onglets
+    function showTab(tabName) {
+        // Masquer tous les contenus
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.add('hidden');
+        });
+        
+        // Réinitialiser tous les onglets
+        document.querySelectorAll('[id^="tab-"]').forEach(tab => {
+            tab.classList.remove('border-blue-500', 'text-blue-600', 'bg-blue-50');
+            tab.classList.add('border-transparent', 'text-gray-500');
+        });
+        
+        // Afficher le contenu sélectionné
+        document.getElementById('content-' + tabName).classList.remove('hidden');
+        
+        // Activer l'onglet sélectionné
+        const activeTab = document.getElementById('tab-' + tabName);
+        activeTab.classList.remove('border-transparent', 'text-gray-500');
+        activeTab.classList.add('border-blue-500', 'text-blue-600', 'bg-blue-50');
+    }
+
     function showRejectModal(candidatureId) {
         const modal = document.getElementById('rejectModal');
         const form = document.getElementById('rejectForm');
         form.action = '/entreprise/candidatures/' + candidatureId + '/reject';
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function showRejectDemandeModal(demandeId) {
+        const modal = document.getElementById('rejectModal');
+        const form = document.getElementById('rejectForm');
+        form.action = '/entreprise/demandes/' + demandeId + '/reject';
         modal.classList.remove('hidden');
         modal.classList.add('flex');
     }

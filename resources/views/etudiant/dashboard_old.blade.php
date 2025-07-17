@@ -51,6 +51,11 @@
         transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
+    .dashboard-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+
     .dashboard-header {
         text-align: center;
         margin-bottom: 2rem;
@@ -141,7 +146,6 @@
         background: var(--primary-dark);
         transform: translateY(-3px);
         box-shadow: var(--shadow-lg);
-        color: white;
     }
 
     .action-btn.secondary {
@@ -153,7 +157,6 @@
         background: var(--secondary-blue);
         transform: translateY(-3px);
         box-shadow: var(--shadow-sm);
-        color: var(--text-primary);
     }
 
     .candidatures-card {
@@ -244,93 +247,43 @@
     <div class="dashboard-card">
         <div class="dashboard-header">
             <h1>Bonjour, {{ Auth::user()->prenom }} {{ Auth::user()->name }} 👋</h1>
-            <p>Gérez vos candidatures, demandes de stage et découvrez de nouvelles opportunités.</p>
+            <p>Gérez vos candidatures, vos documents et votre journal de bord.</p>
         </div>
 
         {{-- Statistiques principales --}}
         <div class="card-grid" data-aos="fade-up" data-aos-delay="100">
             <div class="stat-card">
-                <p>Candidatures aux offres</p>
-                <h2>{{ $stats['candidatures']['total'] ?? 0 }}</h2>
-            </div>
-            <div class="stat-card">
-                <p>Demandes de stage</p>
-                <h2>{{ $stats['demandes']['total'] ?? 0 }}</h2>
+                <p>Demandes envoyées</p>
+                <h2>{{ $stats['envoyees'] ?? 0 }}</h2>
             </div>
             <div class="stat-card">
                 <p>En attente</p>
-                <h2>{{ ($stats['candidatures']['en_attente'] ?? 0) + ($stats['demandes']['en_attente'] ?? 0) }}</h2>
+                <h2>{{ $stats['en_attente'] ?? 0 }}</h2>
             </div>
             <div class="stat-card">
-                <p>Acceptées/Validées</p>
-                <h2>{{ ($stats['candidatures']['acceptees'] ?? 0) + ($stats['demandes']['validees'] ?? 0) }}</h2>
+                <p>Acceptées</p>
+                <h2>{{ $stats['acceptees'] ?? 0 }}</h2>
             </div>
-        </div>
-
-        {{-- Statistiques détaillées --}}
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6" data-aos="fade-up" data-aos-delay="150">
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 class="font-semibold text-blue-800 mb-3">📋 Candidatures aux offres</h4>
-                <div class="space-y-2 text-sm">
-                    <div class="flex justify-between">
-                        <span>Total envoyées:</span>
-                        <span class="font-medium">{{ $stats['candidatures']['total'] ?? 0 }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span>En attente:</span>
-                        <span class="font-medium text-yellow-600">{{ $stats['candidatures']['en_attente'] ?? 0 }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span>Acceptées:</span>
-                        <span class="font-medium text-green-600">{{ $stats['candidatures']['acceptees'] ?? 0 }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span>Refusées:</span>
-                        <span class="font-medium text-red-600">{{ $stats['candidatures']['refusees'] ?? 0 }}</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                <h4 class="font-semibold text-green-800 mb-3">🎓 Demandes de stage</h4>
-                <div class="space-y-2 text-sm">
-                    <div class="flex justify-between">
-                        <span>Total envoyées:</span>
-                        <span class="font-medium">{{ $stats['demandes']['total'] ?? 0 }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span>En attente:</span>
-                        <span class="font-medium text-yellow-600">{{ $stats['demandes']['en_attente'] ?? 0 }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span>Validées:</span>
-                        <span class="font-medium text-green-600">{{ $stats['demandes']['validees'] ?? 0 }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span>Refusées:</span>
-                        <span class="font-medium text-red-600">{{ $stats['demandes']['refusees'] ?? 0 }}</span>
-                    </div>
-                </div>
+            <div class="stat-card">
+                <p>Documents uploadés</p>
+                <h2>{{ $stats['documents'] ?? 0 }}</h2>
             </div>
         </div>
 
         {{-- Actions rapides --}}
         <div class="action-grid" data-aos="fade-up" data-aos-delay="200">
             <a href="{{ route('offres.index') }}" class="action-btn primary">
-                <i class="fas fa-search"></i> Voir les offres
+                <i class="fas fa-search"></i> Rechercher des offres
             </a>
-            <a href="{{ route('entreprise.index') }}" class="action-btn primary">
-                <i class="fas fa-building"></i> Faire une demande
-            </a>
-            <a href="{{ route('candidatures.index') }}" class="action-btn secondary">
-                <i class="fas fa-list"></i> Mes candidatures
+            <a href="#" class="action-btn secondary">
+                <i class="fas fa-upload"></i> Uploader des documents
             </a>
             <a href="{{ route('profile.edit') }}" class="action-btn secondary">
-                <i class="fas fa-user-edit"></i> Mon profil
+                <i class="fas fa-user-edit"></i> Mettre à jour le profil
             </a>
         </div>
 
-        {{-- Candidatures récentes --}}
+        {{-- Dernières candidatures --}}
         <div class="candidatures-card" data-aos="fade-up" data-aos-delay="300">
             <h3>Candidatures récentes</h3>
             <div class="divide-y divide-gray-200">
@@ -346,7 +299,7 @@
                     <div class="candidature-item">
                         <div class="candidature-info">
                             <p>{{ $candidature->offre->titre ?? 'Offre inconnue' }}</p>
-                            <span>@ {{ $candidature->offre->entreprise->nom ?? 'Entreprise inconnue' }} • {{ $candidature->created_at->format('d/m/Y') }}</span>
+                            <span>@ {{ $candidature->offre->entreprise->nom ?? 'Entreprise inconnue' }} • {{ $candidature->offre->lieu ?? 'Lieu inconnu' }}</span>
                         </div>
                         <span class="candidature-status {{ $statusClass }}">
                             {{ ucfirst($candidature->statut) }}
@@ -360,7 +313,7 @@
             </div>
         </div>
 
-        {{-- Demandes de stage récentes --}}
+        {{-- 🔹 Nouvelles : Demandes de stage récentes --}}
         <div class="candidatures-card" data-aos="fade-up" data-aos-delay="400">
             <h3>Demandes de stage récentes</h3>
             <div class="divide-y divide-gray-200">
@@ -375,7 +328,7 @@
                     @endphp
                     <div class="candidature-item">
                         <div class="candidature-info">
-                            <p>{{ $demande->objet ?? 'Stage ' . ucfirst($demande->type) }}</p>
+                            <p>Stage {{ ucfirst($demande->type) }}</p>
                             <span>@ {{ $demande->entreprise->nom ?? 'Entreprise inconnue' }} • {{ $demande->created_at->format('d/m/Y') }}</span>
                         </div>
                         <span class="candidature-status {{ $statusClass }}">
@@ -388,37 +341,6 @@
                     </div>
                 @endforelse
             </div>
-        </div>
-
-        {{-- Offres disponibles pour candidater --}}
-        <div class="candidatures-card" data-aos="fade-up" data-aos-delay="500">
-            <h3>Offres disponibles pour candidater</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                @forelse($offresDisponibles as $offre)
-                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:bg-blue-50 transition-colors">
-                        <h4 class="font-semibold text-gray-800 mb-2">{{ $offre->titre }}</h4>
-                        <p class="text-sm text-gray-600 mb-2">{{ $offre->entreprise->nom ?? 'Entreprise inconnue' }}</p>
-                        <p class="text-sm text-gray-500 mb-3">{{ Str::limit($offre->description, 100) }}</p>
-                        <div class="flex justify-between items-center">
-                            <span class="text-xs text-gray-400">{{ $offre->lieu ?? 'Lieu non spécifié' }}</span>
-                            <a href="{{ route('offres.show', $offre) }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                                Voir détails →
-                            </a>
-                        </div>
-                    </div>
-                @empty
-                    <div class="col-span-full empty-state">
-                        <p>Aucune offre disponible pour le moment.</p>
-                    </div>
-                @endforelse
-            </div>
-            @if($offresDisponibles->count() > 0)
-                <div class="text-center mt-4">
-                    <a href="{{ route('offres.index') }}" class="text-blue-600 hover:text-blue-800 font-medium">
-                        Voir toutes les offres →
-                    </a>
-                </div>
-            @endif
         </div>
 
     </div>

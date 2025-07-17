@@ -98,6 +98,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Actions sur les candidatures
         Route::patch('/entreprise/candidatures/{candidature}/approve', [EntrepriseController::class, 'approveCandidature'])->name('entreprise.candidatures.approve');
         Route::patch('/entreprise/candidatures/{candidature}/reject', [EntrepriseController::class, 'rejectCandidature'])->name('entreprise.candidatures.reject');
+        
+        // Actions sur les demandes de stage
+        Route::patch('/entreprise/demandes/{demande}/approve', [EntrepriseController::class, 'approveDemandeStage'])->name('entreprise.demandes.approve');
+        Route::patch('/entreprise/demandes/{demande}/reject', [EntrepriseController::class, 'rejectDemandeStage'])->name('entreprise.demandes.reject');
     });
 
     /*
@@ -113,4 +117,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Routes candidatures (communes mais avec vérifications dans le contrôleur)
     Route::get('/candidatures/{candidature}', [CandidatureController::class, 'show'])->name('candidatures.show');
     Route::get('/candidatures/{candidature}/download/{type}', [CandidatureController::class, 'downloadFile'])->name('candidatures.download');
+    
+    // Routes demandes de stage
+    Route::get('/demandes/{demande}', [DemandeStageController::class, 'show'])->name('demandes.show');
 });

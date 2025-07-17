@@ -35,6 +35,14 @@ class Entreprise extends Model
     }
 
     /**
+     * Relation avec les demandes de stage directes
+     */
+    public function demandesStages()
+    {
+        return $this->hasMany(DemandeStage::class);
+    }
+
+    /**
      * Relation avec l'utilisateur propriétaire de l'entreprise
      */
     public function user(): BelongsTo

@@ -43,7 +43,7 @@
         background: linear-gradient(135deg, var(--secondary-blue) 0%, #ffffff 100%);
         min-height: 100vh;
         color: var(--text-primary);
-        line-height: 1.5;
+        line-height: 1.6;
     }
 
     .main-container {
@@ -54,8 +54,8 @@
         border: 1px solid rgba(255, 255, 255, 0.2);
         overflow: hidden;
         transition: all 0.3s ease;
-        max-width: 1200px; /* Largeur augmentée pour plus d'espace horizontal */
-        margin: 0.5rem auto; /* Marges réduites */
+        max-width: 600px;
+        margin: 2rem auto; /* Réduit pour mieux s’aligner avec la navbar */
     }
 
     .main-container:hover {
@@ -63,11 +63,11 @@
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
     }
 
-    /* En-tête du formulaire - plus compact */
+    /* En-tête du formulaire */
     .form-header {
         background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-light) 100%);
         color: white;
-        padding: 1.5rem; /* Padding réduit */
+        padding: 2rem;
         text-align: center;
         position: relative;
         overflow: hidden;
@@ -92,14 +92,14 @@
     .icon-container {
         position: relative;
         z-index: 1;
-        margin-bottom: 0.5rem; /* Réduit */
+        margin-bottom: 1rem;
     }
 
     .icon-bg {
         background: rgba(255, 255, 255, 0.2);
         backdrop-filter: blur(10px);
         border-radius: 50%;
-        padding: 0.75rem; /* Réduit */
+        padding: 1rem;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -111,31 +111,31 @@
         background: rgba(255, 255, 255, 0.3);
     }
 
-    /* Formulaire - padding réduit */
+    /* Formulaire */
     .form-body {
-        padding: 1.5rem; /* Padding réduit */
+        padding: 2rem; /* Réduit le padding vertical */
         background: var(--background);
     }
 
     .form-group {
-        margin-bottom: 0.75rem; /* Espacement vertical réduit */
+        margin-bottom: 1rem; /* Réduit l'espacement vertical */
     }
 
     .form-label {
         display: block;
         font-weight: 600;
-        font-size: 0.8rem; /* Taille réduite */
+        font-size: 0.875rem;
         color: var(--text-primary);
-        margin-bottom: 0.25rem; /* Réduit */
+        margin-bottom: 0.5rem;
         transition: color 0.3s ease;
     }
 
     .form-control {
         width: 100%;
-        padding: 0.75rem 0.875rem; /* Padding réduit */
+        padding: 0.875rem 1rem;
         border: 2px solid var(--border-color);
-        border-radius: 10px; /* Coins moins arrondis */
-        font-size: 0.8rem; /* Taille réduite */
+        border-radius: 12px;
+        font-size: 0.875rem;
         transition: all 0.3s ease;
         background: var(--background);
     }
@@ -165,8 +165,8 @@
     .invalid-feedback {
         display: block;
         color: var(--danger-color);
-        font-size: 0.7rem; /* Plus petit */
-        margin-top: 0.2rem;
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
         font-weight: 500;
         animation: slideIn 0.3s ease;
     }
@@ -176,22 +176,37 @@
         to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Sélecteur de rôle - plus compact */
+    /* Sélecteur de rôle */
     .role-selector {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 1rem; /* Gap réduit */
-        margin-bottom: 1.5rem; /* Marge réduite */
+        gap: 1.5rem;
+        margin-bottom: 2rem;
     }
 
     .role-option {
-        padding: 1rem; /* Padding réduit */
+        padding: 1.5rem;
         border: 2px solid var(--border-color);
-        border-radius: 10px;
+        border-radius: 12px;
         cursor: pointer;
         transition: all 0.3s ease;
         text-align: center;
         background: var(--background);
+    }
+
+    .role-option::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.1), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .role-option:hover::before {
+        left: 100%;
     }
 
     .role-option:hover {
@@ -211,28 +226,9 @@
     }
 
     .role-icon {
-        font-size: 1.5rem; /* Réduit */
-        margin-bottom: 0.25rem;
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
         color: var(--primary-blue);
-    }
-
-    /* Grilles pour optimiser l'espace horizontal */
-    .grid-2 {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
-    }
-
-    .grid-3 {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: 1rem;
-    }
-
-    .grid-4 {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr 1fr;
-        gap: 1rem;
     }
 
     /* Boutons */
@@ -240,13 +236,28 @@
         background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-light) 100%);
         color: white;
         border: none;
-        padding: 0.75rem 2rem; /* Padding réduit */
+        padding: 0.875rem 2rem;
         border-radius: 50px;
         font-weight: 600;
         font-size: 0.875rem;
         cursor: pointer;
         transition: all 0.3s ease;
         width: 100%;
+    }
+
+    .btn-primary::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .btn-primary:hover::before {
+        left: 100%;
     }
 
     .btn-primary:hover {
@@ -262,10 +273,10 @@
         background: var(--background);
         color: var(--text-primary);
         border: 2px solid var(--border-color);
-        padding: 0.5rem 1rem; /* Padding réduit */
+        padding: 0.75rem 1.5rem;
         border-radius: 50px;
         font-weight: 600;
-        font-size: 0.8rem; /* Taille réduite */
+        font-size: 0.875rem;
         cursor: pointer;
         transition: all 0.3s ease;
         text-decoration: none;
@@ -279,55 +290,19 @@
         color: var(--text-primary);
     }
 
-    /* Pied de page - plus compact */
+    /* Pied de page */
     .form-footer {
         background: var(--background-alt);
-        padding: 1rem; /* Padding réduit */
+        padding: 2rem;
         text-align: center;
         border-top: 1px solid var(--border-color);
-    }
-
-    /* Sections avec titres */
-    .section-title {
-        font-size: 1rem;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin: 1rem 0 0.75rem 0;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid var(--border-color);
-    }
-
-    /* Responsive - ajustements pour mobile */
-    @media (max-width: 1024px) {
-        .grid-4 { grid-template-columns: 1fr 1fr; }
-        .grid-3 { grid-template-columns: 1fr 1fr; }
-    }
-
-    @media (max-width: 768px) {
-        .main-container {
-            margin: 0.5rem;
-            border-radius: 16px;
-        }
-        
-        .form-body {
-            padding: 1rem;
-        }
-        
-        .grid-2, .grid-3, .grid-4 {
-            grid-template-columns: 1fr;
-            gap: 0.75rem;
-        }
-        
-        .role-selector {
-            grid-template-columns: 1fr;
-        }
     }
 
     /* Animations */
     .field-group {
         opacity: 0;
-        transform: translateY(10px);
-        animation: fadeInUp 0.4s ease forwards;
+        transform: translateY(20px);
+        animation: fadeInUp 0.5s ease forwards;
     }
 
     @keyframes fadeInUp {
@@ -337,10 +312,15 @@
         }
     }
 
+    /* Validation en temps réel */
+    .form-control.validating {
+        border-color: var(--accent-color);
+    }
+
     /* Loader */
     .spinner {
-        width: 16px;
-        height: 16px;
+        width: 20px;
+        height: 20px;
         border: 2px solid rgba(255, 255, 255, 0.3);
         border-top: 2px solid white;
         border-radius: 50%;
@@ -353,19 +333,18 @@
         100% { transform: rotate(360deg); }
     }
 
-    /* Toast notifications */
+    /* Notifications toast */
     .toast {
         position: fixed;
         top: 20px;
         right: 20px;
-        padding: 0.75rem 1rem;
-        border-radius: 10px;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
         color: white;
         font-weight: 500;
         z-index: 1000;
         transform: translateX(100%);
         transition: transform 0.3s ease;
-        font-size: 0.85rem;
     }
 
     .toast.show {
@@ -379,6 +358,22 @@
     .toast.error {
         background: var(--danger-color);
     }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .role-selector {
+            grid-template-columns: 1fr;
+        }
+        
+        .form-body {
+            padding: 1.5rem;
+        }
+        
+        .main-container {
+            margin: 1rem;
+            border-radius: 16px;
+        }
+    }
 </style>
 @endpush
 
@@ -386,24 +381,24 @@
 <meta name="description" content="Inscrivez-vous sur PlateformeStages pour gérer vos stages et candidatures en tant qu'étudiant ou entreprise.">
 <meta name="keywords" content="inscription, stages, gestion de stages, étudiants, entreprises">
 
-<main class="min-h-screen py-4 px-2">
-    <div class="container mx-auto">
-        <div class="main-container" data-aos="fade-up" data-aos-duration="600">
+<main class="min-h-screen py-8 px-4 with-form"> <!-- Ajout de with-form pour plus de padding -->
+    <div class="container mx-auto max-w-2xl">
+        <div class="main-container" data-aos="fade-up" data-aos-duration="800">
             <!-- En-tête -->
             <div class="form-header">
                 <div class="icon-container">
                     <div class="icon-bg">
-                        <svg id="icon-etudiant" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg id="icon-etudiant" class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422A12.083 12.083 0 0118 9.25c0 2.21-2.686 4-6 4s-6-1.79-6-4c0-.651.164-1.265.45-1.828L12 14z"/>
                         </svg>
-                        <svg id="icon-entreprise" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg id="icon-entreprise" class="w-8 h-8 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                         </svg>
                     </div>
                 </div>
-                <h1 id="form-title" class="text-xl font-bold mb-1">Inscription Étudiant</h1>
-                <p class="text-white text-xs">Créez votre compte pour accéder aux opportunités de stage</p>
+                <h1 id="form-title" class="text-2xl font-bold mb-2">Inscription Étudiant</h1>
+                <p class="text-white text-sm">Créez votre compte pour accéder aux opportunités de stage</p>
             </div>
 
             <!-- Formulaire -->
@@ -417,25 +412,22 @@
                             <input type="radio" id="role-etudiant" name="role" value="etudiant" 
                                    {{ old('role', request()->query('role', 'etudiant')) == 'etudiant' ? 'checked' : '' }}>
                             <div class="role-icon">🎓</div>
-                            <div class="font-semibold text-sm">Étudiant</div>
-                            <div class="text-xs text-gray-600">Rechercher des stages</div>
+                            <div class="font-semibold">Étudiant</div>
+                            <div class="text-sm text-gray-600">Rechercher des stages</div>
                         </label>
                         <label class="role-option" for="role-entreprise">
                             <input type="radio" id="role-entreprise" name="role" value="entreprise" 
                                    {{ old('role', request()->query('role')) == 'entreprise' ? 'checked' : '' }}>
                             <div class="role-icon">🏢</div>
-                            <div class="font-semibold text-sm">Entreprise</div>
-                            <div class="text-xs text-gray-600">Proposer des stages</div>
+                            <div class="font-semibold">Entreprise</div>
+                            <div class="text-sm text-gray-600">Proposer des stages</div>
                         </label>
                     </div>
 
                     <!-- Champs Étudiant -->
-                    <div id="student-fields" data-aos="fade-up" data-aos-delay="200">
-                        <div class="section-title">👤 Informations personnelles</div>
-                        
-                        <!-- Nom et Prénom sur la même ligne -->
-                        <div class="grid-2 field-group">
-                            <div class="form-group">
+                    <div id="student-fields" class="space-y-4" data-aos="fade-up" data-aos-delay="200">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="form-group field-group">
                                 <label for="prenom" class="form-label">Prénom *</label>
                                 <input id="prenom" name="prenom" type="text" value="{{ old('prenom') }}" 
                                        placeholder="Votre prénom" class="form-control @error('prenom') is-invalid @enderror" 
@@ -444,7 +436,7 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-                            <div class="form-group">
+                            <div class="form-group field-group">
                                 <label for="nom" class="form-label">Nom *</label>
                                 <input id="nom" name="nom" type="text" value="{{ old('nom') }}" 
                                        placeholder="Votre nom" class="form-control @error('nom') is-invalid @enderror" 
@@ -455,31 +447,6 @@
                             </div>
                         </div>
                         
-                        <!-- Email et Téléphone sur la même ligne -->
-                        <div class="grid-2 field-group">
-                            <div class="form-group">
-                                <label for="email" class="form-label">Email *</label>
-                                <input id="email" name="email" type="email" value="{{ old('email') }}" 
-                                       placeholder="votre@email.com" class="form-control @error('email') is-invalid @enderror" 
-                                       required data-validation="required,email">
-                                @error('email')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="form-group">
-                                <label for="telephone" class="form-label">Téléphone *</label>
-                                <input id="telephone" name="telephone" type="tel" value="{{ old('telephone') }}" 
-                                       placeholder="06 12 34 56 78" class="form-control @error('telephone') is-invalid @enderror" 
-                                       required data-validation="required,phone">
-                                @error('telephone')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="section-title">🎓 Informations académiques</div>
-                        
-                        <!-- Université seule (champ plus large) -->
                         <div class="form-group field-group">
                             <label for="universite" class="form-label">Université / École *</label>
                             <input id="universite" name="universite" type="text" value="{{ old('universite') }}" 
@@ -490,9 +457,8 @@
                             @enderror
                         </div>
                         
-                        <!-- Domaine et Niveau sur la même ligne -->
-                        <div class="grid-2 field-group">
-                            <div class="form-group">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="form-group field-group">
                                 <label for="domaine" class="form-label">Domaine d'études *</label>
                                 <input id="domaine" name="domaine" type="text" value="{{ old('domaine') }}" 
                                        placeholder="Ex: Informatique, Marketing..." class="form-control @error('domaine') is-invalid @enderror" 
@@ -501,10 +467,10 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-                            <div class="form-group">
+                            <div class="form-group field-group">
                                 <label for="niveau" class="form-label">Niveau d'études *</label>
                                 <select id="niveau" name="niveau" class="form-control @error('niveau') is-invalid @enderror" required>
-                                    <option value="">Sélectionnez</option>
+                                    <option value="">Sélectionnez votre niveau</option>
                                     <option value="Bac+1" {{ old('niveau') == 'Bac+1' ? 'selected' : '' }}>Bac+1</option>
                                     <option value="Bac+2" {{ old('niveau') == 'Bac+2' ? 'selected' : '' }}>Bac+2</option>
                                     <option value="Bac+3" {{ old('niveau') == 'Bac+3' ? 'selected' : '' }}>Bac+3 (Licence)</option>
@@ -520,37 +486,22 @@
                     </div>
 
                     <!-- Champs Entreprise -->
-                    <div id="enterprise-fields" class="hidden" data-aos="fade-up" data-aos-delay="200">
-                        <div class="section-title">🏢 Informations entreprise</div>
-                        
-                        <!-- Nom entreprise et Email sur la même ligne -->
-                        <div class="grid-2 field-group">
-                            <div class="form-group">
-                                <label for="nom_entreprise" class="form-label">Nom de l'entreprise *</label>
-                                <input id="nom_entreprise" name="nom_entreprise" type="text" value="{{ old('nom_entreprise') }}" 
-                                       placeholder="Nom de l'entreprise" class="form-control @error('nom_entreprise') is-invalid @enderror" 
-                                       required data-validation="required,minlength:2">
-                                @error('nom_entreprise')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="form-group">
-                                <label for="email" class="form-label">Email *</label>
-                                <input id="email_entreprise" name="email" type="email" value="{{ old('email') }}" 
-                                       placeholder="contact@entreprise.com" class="form-control @error('email') is-invalid @enderror" 
-                                       required data-validation="required,email">
-                                @error('email')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
+                    <div id="enterprise-fields" class="space-y-4 hidden" data-aos="fade-up" data-aos-delay="200">
+                        <div class="form-group field-group">
+                            <label for="nom_entreprise" class="form-label">Nom de l'entreprise *</label>
+                            <input id="nom_entreprise" name="nom_entreprise" type="text" value="{{ old('nom_entreprise') }}" 
+                                   placeholder="Nom de l'entreprise" class="form-control @error('nom_entreprise') is-invalid @enderror" 
+                                   required data-validation="required,minlength:2">
+                            @error('nom_entreprise')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
                         
-                        <!-- Secteur, Taille et Téléphone sur la même ligne -->
-                        <div class="grid-3 field-group">
-                            <div class="form-group">
-                                <label for="secteur" class="form-label">Secteur *</label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="form-group field-group">
+                                <label for="secteur" class="form-label">Secteur d'activité *</label>
                                 <select id="secteur" name="secteur" class="form-control @error('secteur') is-invalid @enderror" required>
-                                    <option value="">Secteur</option>
+                                    <option value="">Sélectionnez un secteur</option>
                                     <option value="Technologie" {{ old('secteur') == 'Technologie' ? 'selected' : '' }}>Technologie</option>
                                     <option value="Finance" {{ old('secteur') == 'Finance' ? 'selected' : '' }}>Finance</option>
                                     <option value="Santé" {{ old('secteur') == 'Santé' ? 'selected' : '' }}>Santé</option>
@@ -564,57 +515,45 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-                            <div class="form-group">
-                                <label for="taille" class="form-label">Taille *</label>
+                            <div class="form-group field-group">
+                                <label for="taille" class="form-label">Taille de l'entreprise *</label>
                                 <select id="taille" name="taille" class="form-control @error('taille') is-invalid @enderror" required>
-                                    <option value="">Taille</option>
-                                    <option value="1-10" {{ old('taille') == '1-10' ? 'selected' : '' }}>1-10</option>
-                                    <option value="11-50" {{ old('taille') == '11-50' ? 'selected' : '' }}>11-50</option>
-                                    <option value="51-200" {{ old('taille') == '51-200' ? 'selected' : '' }}>51-200</option>
-                                    <option value="201-500" {{ old('taille') == '201-500' ? 'selected' : '' }}>201-500</option>
-                                    <option value="500+" {{ old('taille') == '500+' ? 'selected' : '' }}>500+</option>
+                                    <option value="">Sélectionnez une taille</option>
+                                    <option value="1-10" {{ old('taille') == '1-10' ? 'selected' : '' }}>1-10 employés</option>
+                                    <option value="11-50" {{ old('taille') == '11-50' ? 'selected' : '' }}>11-50 employés</option>
+                                    <option value="51-200" {{ old('taille') == '51-200' ? 'selected' : '' }}>51-200 employés</option>
+                                    <option value="201-500" {{ old('taille') == '201-500' ? 'selected' : '' }}>201-500 employés</option>
+                                    <option value="500+" {{ old('taille') == '500+' ? 'selected' : '' }}>500+ employés</option>
                                 </select>
                                 @error('taille')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-                            <div class="form-group">
-                                <label for="telephone_entreprise" class="form-label">Téléphone *</label>
-                                <input id="telephone_entreprise" name="telephone" type="tel" value="{{ old('telephone') }}" 
-                                       placeholder="01 23 45 67 89" class="form-control @error('telephone') is-invalid @enderror" 
-                                       required data-validation="required,phone">
-                                @error('telephone')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
                         </div>
                         
-                        <!-- Adresse et Site web sur la même ligne -->
-                        <div class="grid-2 field-group">
-                            <div class="form-group">
-                                <label for="adresse" class="form-label">Adresse *</label>
-                                <input id="adresse" name="adresse" type="text" value="{{ old('adresse') }}" 
-                                       placeholder="Adresse complète" class="form-control @error('adresse') is-invalid @enderror" 
-                                       required data-validation="required,minlength:10">
-                                @error('adresse')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="form-group">
-                                <label for="site_web" class="form-label">Site web</label>
-                                <input id="site_web" name="site_web" type="url" value="{{ old('site_web') }}" 
-                                       placeholder="https://votre-site.com" class="form-control @error('site_web') is-invalid @enderror" 
-                                       data-validation="url">
-                                @error('site_web')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
+                        <div class="form-group field-group">
+                            <label for="adresse" class="form-label">Adresse *</label>
+                            <input id="adresse" name="adresse" type="text" value="{{ old('adresse') }}" 
+                                   placeholder="Adresse complète" class="form-control @error('adresse') is-invalid @enderror" 
+                                   required data-validation="required,minlength:10">
+                            @error('adresse')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
                         
-                        <!-- Description -->
+                        <div class="form-group field-group">
+                            <label for="site_web" class="form-label">Site web</label>
+                            <input id="site_web" name="site_web" type="url" value="{{ old('site_web') }}" 
+                                   placeholder="https://votre-site.com" class="form-control @error('site_web') is-invalid @enderror" 
+                                   data-validation="url">
+                            @error('site_web')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        
                         <div class="form-group field-group">
                             <label for="description" class="form-label">Description</label>
-                            <textarea id="description" name="description" rows="3" 
+                            <textarea id="description" name="description" rows="4" 
                                       placeholder="Décrivez votre entreprise, vos activités..." 
                                       class="form-control @error('description') is-invalid @enderror" 
                                       data-validation="minlength:10">{{ old('description') }}</textarea>
@@ -625,20 +564,39 @@
                     </div>
 
                     <!-- Informations de connexion -->
-                    <div data-aos="fade-up" data-aos-delay="300">
-                        <div class="section-title">🔐 Sécurité</div>
+                    <div class="space-y-4 mt-6" data-aos="fade-up" data-aos-delay="300">
+                        <h3 class="text-lg font-semibold text-gray-700 border-b pb-2">Informations de connexion</h3>
                         
-                        <!-- Mots de passe sur la même ligne -->
-                        <div class="grid-2 field-group">
-                            <div class="form-group">
+                        <div class="form-group field-group">
+                            <label for="email" class="form-label">Adresse email *</label>
+                            <input id="email" name="email" type="email" value="{{ old('email') }}" 
+                                   placeholder="votre@email.com" class="form-control @error('email') is-invalid @enderror" 
+                                   required data-validation="required,email">
+                            @error('email')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        
+                        <div class="form-group field-group">
+                            <label for="telephone" class="form-label">Téléphone *</label>
+                            <input id="telephone" name="telephone" type="tel" value="{{ old('telephone') }}" 
+                                   placeholder="Ex: 06 12 34 56 78" class="form-control @error('telephone') is-invalid @enderror" 
+                                   required data-validation="required,phone">
+                            @error('telephone')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="form-group field-group">
                                 <label for="password" class="form-label">Mot de passe *</label>
                                 <div class="relative">
                                     <input id="password" name="password" type="password" 
                                            placeholder="Mot de passe sécurisé" class="form-control @error('password') is-invalid @enderror" 
                                            required data-validation="required,password">
-                                    <button type="button" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600" 
+                                    <button type="button" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600" 
                                             onclick="togglePassword('password')">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                         </svg>
@@ -647,7 +605,7 @@
                                 @error('password')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
-                                <div class="mt-1">
+                                <div class="mt-2">
                                     <div class="password-strength" id="password-strength">
                                         <div class="flex space-x-1 mb-1">
                                             <div class="strength-bar" data-level="1"></div>
@@ -659,15 +617,15 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group field-group">
                                 <label for="password_confirmation" class="form-label">Confirmer le mot de passe *</label>
                                 <div class="relative">
                                     <input id="password_confirmation" name="password_confirmation" type="password" 
                                            placeholder="Confirmez votre mot de passe" class="form-control @error('password_confirmation') is-invalid @enderror" 
                                            required data-validation="required,match:password">
-                                    <button type="button" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600" 
+                                    <button type="button" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600" 
                                             onclick="togglePassword('password_confirmation')">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                         </svg>
@@ -681,10 +639,10 @@
                         
                         <!-- Conditions d'utilisation -->
                         <div class="form-group field-group">
-                            <label class="flex items-start space-x-2">
+                            <label class="flex items-start space-x-3">
                                 <input type="checkbox" name="terms" id="terms" required 
                                        class="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                                <span class="text-xs text-gray-700">
+                                <span class="text-sm text-gray-700">
                                     J'accepte les <a href="#" class="text-blue-600 hover:text-blue-800 font-medium">conditions d'utilisation</a> 
                                     et la <a href="#" class="text-blue-600 hover:text-blue-800 font-medium">politique de confidentialité</a>
                                 </span>
@@ -696,7 +654,7 @@
                     </div>
 
                     <!-- Bouton de soumission -->
-                    <div class="mt-6" data-aos="fade-up" data-aos-delay="400">
+                    <div class="mt-8" data-aos="fade-up" data-aos-delay="400">
                         <button type="submit" class="btn-primary" id="submit-btn">
                             <span id="submit-text">Créer mon compte</span>
                             <span id="submit-loading" class="hidden">
@@ -710,7 +668,7 @@
 
             <!-- Pied de page -->
             <div class="form-footer">
-                <p class="text-gray-600 text-xs mb-2">
+                <p class="text-gray-600 text-sm mb-4">
                     Déjà inscrit ? 
                     <a href="{{ route('login') }}" class="text-blue-600 hover:text-blue-800 font-medium">
                         Se connecter
@@ -734,8 +692,8 @@
     // Initialisation AOS
     AOS.init({
         once: true,
-        offset: 50,
-        duration: 600,
+        offset: 100,
+        duration: 800,
         easing: 'ease-out-cubic',
     });
 
@@ -769,7 +727,7 @@
         
         const visibleFields = selectedRole === 'etudiant' ? studentFields : enterpriseFields;
         visibleFields.querySelectorAll('.field-group').forEach((field, index) => {
-            field.style.animationDelay = `${index * 0.05}s`;
+            field.style.animationDelay = `${index * 0.1}s`;
         });
     }
 
@@ -950,8 +908,8 @@
 
     const styleSheet = document.createElement('style');
     styleSheet.textContent = `
-        .strength-bar { height: 3px; flex: 1; background-color: #e5e7eb; border-radius: 2px; transition: all 0.3s ease; }
-        .password-strength { margin-top: 0.25rem; }
+        .strength-bar { height: 4px; flex: 1; background-color: #e5e7eb; border-radius: 2px; transition: all 0.3s ease; }
+        .password-strength { margin-top: 0.5rem; }
     `;
     document.head.appendChild(styleSheet);
 </script>
