@@ -253,7 +253,7 @@
         {{-- Statistiques principales --}}
         <div class="card-grid" data-aos="fade-up" data-aos-delay="100">
             <div class="stat-card">
-                <p>Candidatures envoyées</p>
+                <p>Demandes envoyées</p>
                 <h2>{{ $stats['envoyees'] ?? 0 }}</h2>
             </div>
             <div class="stat-card">
