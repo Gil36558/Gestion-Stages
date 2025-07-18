@@ -55,6 +55,13 @@ class EtudiantController extends Controller
             ->take(5)
             ->get();
 
+        // Mes stages
+        $mesStages = \App\Models\Stage::where('user_id', $user->id)
+            ->with('entreprise')
+            ->latest()
+            ->take(5)
+            ->get();
+
         // Offres disponibles pour candidater
         $offresDisponibles = Offre::with('entreprise')
             ->whereDoesntHave('candidatures', function($query) use ($user) {
@@ -66,6 +73,7 @@ class EtudiantController extends Controller
 
         return view('etudiant.dashboard', compact(
             'stats', 
+            'mesStages',
             'recentCandidatures', 
             'recentDemandes', 
             'offresDisponibles'

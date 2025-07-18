@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Candidature;
 use App\Models\Offre;
+use App\Models\Stage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -19,12 +20,34 @@ class CandidatureController extends Controller
             abort(403, 'Accès réservé aux étudiants');
         }
 
-        $candidatures = Auth::user()->candidatures()
-                           ->with(['offre.entreprise'])
-                           ->latest()
-                           ->paginate(10);
+        $candidatures = Candidature::with(['offre.entreprise'])
+                                  ->where('user_id', Auth::id())
+                                  ->latest()
+                                  ->paginate(10);
 
         return view('candidatures.index', compact('candidatures'));
+    }
+
+    /**
+     * Affiche une candidature spécifique
+     */
+    public function show(Candidature $candidature)
+    {
+        // Vérifier que l'utilisateur peut voir cette candidature
+        if (Auth::user()->role === 'etudiant' && $candidature->user_id !== Auth::id()) {
+            abort(403, 'Accès non autorisé');
+        }
+        
+        if (Auth::user()->role === 'entreprise') {
+            $entreprise = Auth::user()->entreprise;
+            if (!$entreprise || $candidature->offre->entreprise_id !== $entreprise->id) {
+                abort(403, 'Accès non autorisé');
+            }
+        }
+
+        $candidature->load(['offre.entreprise', 'user']);
+        
+        return view('candidatures.show', compact('candidature'));
     }
 
     /**
@@ -38,92 +61,155 @@ class CandidatureController extends Controller
 
         $validated = $request->validate([
             'offre_id' => 'required|exists:offres,id',
-            'cv' => 'required|file|mimes:pdf|max:5120', // 5MB max
-            'lettre' => 'required|file|mimes:pdf,docx|max:5120',
-            'message' => 'nullable|string|max:1000',
+            'message' => 'required|string|min:50|max:2000',
+            'cv' => 'required|file|mimes:pdf,doc,docx|max:5120', // 5MB max
+            'lettre' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
+            'informations_complementaires' => 'nullable|string|max:1000',
+            'date_debut_disponible' => 'nullable|date|after_or_equal:today',
+            'duree_souhaitee' => 'nullable|integer|min:1|max:52',
+            'competences' => 'nullable|string|max:1000',
+            'experiences' => 'nullable|string|max:1000',
+            'confirmation' => 'required|accepted',
         ]);
 
         $offre = Offre::findOrFail($validated['offre_id']);
 
-        // Vérifier si l'offre peut recevoir des candidatures
+        // Vérifier que l'offre accepte encore des candidatures
         if (!$offre->canReceiveCandidatures()) {
             return back()->with('error', 'Cette offre n\'accepte plus de candidatures.');
         }
 
-        // Vérifier si l'étudiant n'a pas déjà candidaté
-        $existingCandidature = Candidature::where('user_id', Auth::id())
-                                         ->where('offre_id', $offre->id)
-                                         ->first();
+        // Vérifier que l'étudiant n'a pas déjà candidaté
+        $candidatureExistante = Candidature::where('user_id', Auth::id())
+                                          ->where('offre_id', $offre->id)
+                                          ->first();
 
-        if ($existingCandidature) {
-            return back()->with('error', 'Vous avez déjà candidaté pour cette offre.');
+        if ($candidatureExistante) {
+            return back()->with('error', 'Vous avez déjà candidaté à cette offre.');
         }
 
-        // Upload des fichiers
-        $cvPath = $request->file('cv')->store('candidatures/cv', 'public');
-        $lettrePath = $request->file('lettre')->store('candidatures/lettres', 'public');
+        // Gérer l'upload des fichiers
+        $cvPath = null;
+        $lettrePath = null;
+
+        if ($request->hasFile('cv')) {
+            $cvPath = $request->file('cv')->store('candidatures/cv', 'public');
+        }
+
+        if ($request->hasFile('lettre')) {
+            $lettrePath = $request->file('lettre')->store('candidatures/lettres', 'public');
+        }
 
         // Créer la candidature
-        Candidature::create([
+        $candidature = Candidature::create([
             'user_id' => Auth::id(),
             'offre_id' => $offre->id,
+            'message' => $validated['message'],
             'cv' => $cvPath,
             'lettre' => $lettrePath,
-            'message' => $validated['message'] ?? null,
+            'informations_complementaires' => $validated['informations_complementaires'],
+            'date_debut_disponible' => $validated['date_debut_disponible'],
+            'duree_souhaitee' => $validated['duree_souhaitee'],
+            'competences' => $validated['competences'],
+            'experiences' => $validated['experiences'],
             'statut' => 'en attente',
         ]);
 
-        return redirect()->route('candidatures.index')
+        return redirect()->route('candidatures.show', $candidature)
                         ->with('success', 'Votre candidature a été envoyée avec succès !');
     }
 
     /**
-     * Affiche une candidature spécifique
+     * Accepte une candidature (entreprise)
      */
-    public function show(Candidature $candidature)
+    public function approve(Candidature $candidature)
     {
-        // Vérifier que l'utilisateur peut voir cette candidature
-        if (Auth::user()->role === 'etudiant' && $candidature->user_id !== Auth::id()) {
+        if (Auth::user()->role !== 'entreprise') {
+            abort(403, 'Accès réservé aux entreprises');
+        }
+
+        $entreprise = Auth::user()->entreprise;
+        if (!$entreprise || $candidature->offre->entreprise_id !== $entreprise->id) {
             abort(403, 'Accès non autorisé');
         }
 
-        if (Auth::user()->role === 'entreprise') {
-            $entreprise = Auth::user()->entreprise;
-            if (!$entreprise || $candidature->offre->entreprise_id !== $entreprise->id) {
-                abort(403, 'Accès non autorisé');
-            }
+        if ($candidature->statut !== 'en attente') {
+            return back()->with('error', 'Cette candidature a déjà été traitée.');
         }
 
-        $candidature->load(['offre.entreprise', 'user']);
-        return view('candidatures.show', compact('candidature'));
+        // Accepter la candidature
+        $candidature->update([
+            'statut' => 'acceptée',
+            'date_reponse' => now(),
+        ]);
+
+        // Créer automatiquement un stage
+        $stage = Stage::create([
+            'user_id' => $candidature->user_id,
+            'entreprise_id' => $entreprise->id,
+            'candidature_id' => $candidature->id,
+            'titre' => $candidature->offre->titre,
+            'description' => $candidature->offre->description,
+            'date_debut' => $candidature->date_debut_disponible ?? $candidature->offre->date_debut,
+            'date_fin' => $candidature->offre->date_fin ?? now()->addWeeks($candidature->duree_souhaitee ?? 12),
+            'lieu' => $candidature->offre->lieu,
+            'statut' => 'en_attente_debut',
+            'objectifs' => "Stage basé sur l'offre : " . $candidature->offre->titre,
+        ]);
+
+        return back()->with('success', 'Candidature acceptée ! Un stage a été créé automatiquement.');
     }
 
     /**
-     * Supprime une candidature (étudiant uniquement)
+     * Refuse une candidature (entreprise)
      */
-    public function destroy(Candidature $candidature)
+    public function reject(Request $request, Candidature $candidature)
+    {
+        if (Auth::user()->role !== 'entreprise') {
+            abort(403, 'Accès réservé aux entreprises');
+        }
+
+        $entreprise = Auth::user()->entreprise;
+        if (!$entreprise || $candidature->offre->entreprise_id !== $entreprise->id) {
+            abort(403, 'Accès non autorisé');
+        }
+
+        if ($candidature->statut !== 'en attente') {
+            return back()->with('error', 'Cette candidature a déjà été traitée.');
+        }
+
+        $validated = $request->validate([
+            'motif_refus' => 'required|string|max:1000',
+        ]);
+
+        $candidature->update([
+            'statut' => 'refusée',
+            'motif_refus' => $validated['motif_refus'],
+            'date_reponse' => now(),
+        ]);
+
+        return back()->with('success', 'Candidature refusée.');
+    }
+
+    /**
+     * Annule une candidature (étudiant)
+     */
+    public function cancel(Candidature $candidature)
     {
         if (Auth::user()->role !== 'etudiant' || $candidature->user_id !== Auth::id()) {
             abort(403, 'Accès non autorisé');
         }
 
-        // Ne peut supprimer que si la candidature est en attente
         if ($candidature->statut !== 'en attente') {
-            return back()->with('error', 'Vous ne pouvez pas supprimer une candidature déjà traitée.');
+            return back()->with('error', 'Cette candidature ne peut plus être annulée.');
         }
 
-        // Supprimer les fichiers
-        if ($candidature->cv) {
-            Storage::disk('public')->delete($candidature->cv);
-        }
-        if ($candidature->lettre) {
-            Storage::disk('public')->delete($candidature->lettre);
-        }
+        $candidature->update([
+            'statut' => 'annulée',
+            'date_reponse' => now(),
+        ]);
 
-        $candidature->delete();
-
-        return redirect()->route('candidatures.index')
-                        ->with('success', 'Candidature supprimée avec succès.');
+        return back()->with('success', 'Candidature annulée.');
     }
 
     /**
@@ -135,7 +221,7 @@ class CandidatureController extends Controller
         if (Auth::user()->role === 'etudiant' && $candidature->user_id !== Auth::id()) {
             abort(403, 'Accès non autorisé');
         }
-
+        
         if (Auth::user()->role === 'entreprise') {
             $entreprise = Auth::user()->entreprise;
             if (!$entreprise || $candidature->offre->entreprise_id !== $entreprise->id) {
@@ -156,13 +242,13 @@ class CandidatureController extends Controller
                 $fileName = 'Lettre_' . $candidature->user->name . '.pdf';
                 break;
             default:
-                abort(404, 'Fichier non trouvé');
+                abort(404);
         }
 
         if (!$filePath || !Storage::disk('public')->exists($filePath)) {
             abort(404, 'Fichier non trouvé');
         }
 
-        return response()->download(storage_path('app/public/' . $filePath), $fileName);
+        return Storage::disk('public')->download($filePath, $fileName);
     }
 }

@@ -94,6 +94,14 @@ class User extends Authenticatable // implements MustVerifyEmail
     }
 
     /**
+     * 🎯 Stages de l'étudiant (1-n)
+     */
+    public function stages(): HasMany
+    {
+        return $this->hasMany(Stage::class);
+    }
+
+    /**
      * 🔒 Vérifie si l'utilisateur est une entreprise
      */
     public function estEntreprise(): bool
@@ -107,6 +115,14 @@ class User extends Authenticatable // implements MustVerifyEmail
     public function estEtudiant(): bool
     {
         return $this->role === 'etudiant';
+    }
+
+    /**
+     * 👑 Vérifie si l'utilisateur est un administrateur
+     */
+    public function estAdmin(): bool
+    {
+        return $this->role === 'admin';
     }
 
     /**

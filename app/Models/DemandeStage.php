@@ -107,4 +107,12 @@ class DemandeStage extends Model
     {
         return $this->belongsTo(Offre::class);
     }
+
+    /**
+     * 🎯 Stage créé (si demande acceptée)
+     */
+    public function stage()
+    {
+        return $this->hasOne(Stage::class, 'demande_stage_id');
+    }
 }

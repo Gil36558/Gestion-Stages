@@ -316,18 +316,78 @@
 
         {{-- Actions rapides --}}
         <div class="action-grid" data-aos="fade-up" data-aos-delay="200">
+            <a href="{{ route('stages.index') }}" class="action-btn primary">
+                <i class="fas fa-briefcase"></i> Mes Stages
+            </a>
             <a href="{{ route('offres.index') }}" class="action-btn primary">
                 <i class="fas fa-search"></i> Voir les offres
             </a>
-            <a href="{{ route('entreprise.index') }}" class="action-btn primary">
+            <a href="{{ route('entreprise.index') }}" class="action-btn secondary">
                 <i class="fas fa-building"></i> Faire une demande
             </a>
             <a href="{{ route('candidatures.index') }}" class="action-btn secondary">
                 <i class="fas fa-list"></i> Mes candidatures
             </a>
-            <a href="{{ route('profile.edit') }}" class="action-btn secondary">
-                <i class="fas fa-user-edit"></i> Mon profil
-            </a>
+        </div>
+
+        {{-- Mes Stages --}}
+        <div class="candidatures-card" data-aos="fade-up" data-aos-delay="250">
+            <h3>Mes Stages</h3>
+            <div class="divide-y divide-gray-200">
+                @forelse($mesStages ?? [] as $stage)
+                    @php
+                        $statusClass = match(strtolower($stage->statut)) {
+                            'en_cours' => 'acceptee',
+                            'termine' => 'acceptee',
+                            'evalue' => 'acceptee',
+                            'valide' => 'acceptee',
+                            'en_attente_debut' => 'en_attente',
+                            'annule' => 'refusee',
+                            default => 'en_attente',
+                        };
+                    @endphp
+                    <div class="candidature-item">
+                        <div class="candidature-info">
+                            <p>{{ $stage->titre }}</p>
+                            <span>@ {{ $stage->entreprise->nom ?? 'Entreprise inconnue' }} • Du {{ $stage->date_debut->format('d/m/Y') }} au {{ $stage->date_fin->format('d/m/Y') }}</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="candidature-status {{ $statusClass }}">
+                                {{ $stage->statut_francais }}
+                            </span>
+                            @if($stage->statut === 'en_cours')
+                                <a href="{{ route('journal.index', $stage) }}" 
+                                   class="bg-purple-600 text-white px-3 py-1 rounded text-sm hover:bg-purple-700 transition-colors">
+                                    📔 Journal
+                                </a>
+                            @endif
+                            <a href="{{ route('stages.show', $stage) }}" 
+                               class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors">
+                                Voir
+                            </a>
+                        </div>
+                    </div>
+                @empty
+                    <div class="empty-state">
+                        <p>Aucun stage trouvé. Candidatez aux offres ou faites une demande directe !</p>
+                        <div class="mt-4 space-x-4">
+                            <a href="{{ route('offres.index') }}" class="text-blue-600 hover:text-blue-800 font-medium">
+                                Voir les offres →
+                            </a>
+                            <a href="{{ route('entreprise.index') }}" class="text-green-600 hover:text-green-800 font-medium">
+                                Faire une demande →
+                            </a>
+                        </div>
+                    </div>
+                @endforelse
+            </div>
+            @if(($mesStages ?? collect())->count() > 0)
+                <div class="text-center mt-4">
+                    <a href="{{ route('stages.index') }}" class="text-blue-600 hover:text-blue-800 font-medium">
+                        Voir tous mes stages →
+                    </a>
+                </div>
+            @endif
         </div>
 
         {{-- Candidatures récentes --}}

@@ -17,20 +17,11 @@ class Candidature extends Model
         'message',
         'statut',
         'motif_refus',
-        'informations_complementaires',
-        'date_debut_disponible',
-        'duree_souhaitee',
-        'competences',
-        'experiences',
-        'date_reponse',
     ];
 
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
-        'date_debut_disponible' => 'date',
-        'date_reponse' => 'datetime',
-        'duree_souhaitee' => 'integer',
     ];
 
     // Relations
@@ -72,14 +63,8 @@ class Candidature extends Model
             'en attente' => 'En attente',
             'acceptée' => 'Acceptée',
             'refusée' => 'Refusée',
-            'annulée' => 'Annulée',
             default => 'Non spécifié'
         };
-    }
-
-    public function getStatutFrancaisAttribute()
-    {
-        return $this->getStatutDisplayAttribute();
     }
 
     public function getStatutColorAttribute()
@@ -88,7 +73,6 @@ class Candidature extends Model
             'en attente' => 'warning',
             'acceptée' => 'success',
             'refusée' => 'danger',
-            'annulée' => 'secondary',
             default => 'secondary'
         };
     }
@@ -109,39 +93,8 @@ class Candidature extends Model
         return $this->statut === 'refusée';
     }
 
-    public function isAnnulee()
-    {
-        return $this->statut === 'annulée';
-    }
-
     public function canBeModified()
     {
         return $this->isEnAttente();
-    }
-
-    public function canBeCancelled()
-    {
-        return $this->isEnAttente();
-    }
-
-    // Méthodes pour les fichiers
-    public function hasCv()
-    {
-        return !empty($this->cv);
-    }
-
-    public function hasLettre()
-    {
-        return !empty($this->lettre);
-    }
-
-    public function getCvUrlAttribute()
-    {
-        return $this->cv ? asset('storage/' . $this->cv) : null;
-    }
-
-    public function getLettreUrlAttribute()
-    {
-        return $this->lettre ? asset('storage/' . $this->lettre) : null;
     }
 }

@@ -31,17 +31,8 @@ class OffreController extends Controller
      */
     public function show(Offre $offre)
     {
-        $offre->load('entreprise', 'candidatures');
-        
-        // Vérifier si l'utilisateur connecté a déjà candidaté
-        $candidatureExistante = null;
-        if (Auth::check() && Auth::user()->role === 'etudiant') {
-            $candidatureExistante = $offre->candidatures()
-                                         ->where('user_id', Auth::id())
-                                         ->first();
-        }
-        
-        return view('offres.show', compact('offre', 'candidatureExistante'));
+        $offre->load('entreprise');
+        return view('offres.show', compact('offre'));
     }
 
     /**

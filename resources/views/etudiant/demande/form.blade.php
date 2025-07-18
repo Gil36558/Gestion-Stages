@@ -334,16 +334,54 @@
                         </div>
 
                         <div class="binome-section" id="binome-section">
-                            <div class="form-group">
-                                <label for="email_binome" class="form-label">Email du binôme *</label>
-                                <input id="email_binome" name="email_binome" type="email" 
-                                       value="{{ old('email_binome') }}" 
-                                       placeholder="email@exemple.com" 
-                                       class="form-control @error('email_binome') is-invalid @enderror">
-                                @error('email_binome')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                                <small class="text-gray-500 text-xs mt-1">Votre binôme recevra une notification</small>
+                            <!-- Message d'information -->
+                            <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4 rounded-r-lg">
+                                <div class="flex">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-info-circle text-blue-400"></i>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm text-blue-700">
+                                            <strong>Important :</strong> Votre binôme doit d'abord avoir un compte dans le système. 
+                                            Assurez-vous qu'il/elle s'est déjà inscrit(e) avec l'email et le nom que vous allez renseigner ci-dessous.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="form-group">
+                                    <label for="email_binome" class="form-label">Email du binôme *</label>
+                                    <input id="email_binome" name="email_binome" type="email" 
+                                           value="{{ old('email_binome') }}" 
+                                           placeholder="email@exemple.com" 
+                                           class="form-control @error('email_binome') is-invalid @enderror">
+                                    @error('email_binome')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <small class="text-gray-500 text-xs mt-1">Email utilisé lors de l'inscription de votre binôme</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="nom_binome" class="form-label">Nom complet du binôme *</label>
+                                    <input id="nom_binome" name="nom_binome" type="text" 
+                                           value="{{ old('nom_binome') }}" 
+                                           placeholder="Prénom Nom" 
+                                           class="form-control @error('nom_binome') is-invalid @enderror">
+                                    @error('nom_binome')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <small class="text-gray-500 text-xs mt-1">Nom utilisé lors de l'inscription de votre binôme</small>
+                                </div>
+                            </div>
+
+                            <!-- Bouton de vérification -->
+                            <div class="mt-4">
+                                <button type="button" id="verifier-binome" class="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors">
+                                    <i class="fas fa-search mr-2"></i>
+                                    Vérifier l'existence du binôme
+                                </button>
+                                <div id="verification-result" class="mt-2 text-sm"></div>
                             </div>
                         </div>
 
@@ -551,6 +589,7 @@
     const modeRadios = document.querySelectorAll('input[name="mode"]');
     const binomeSection = document.getElementById('binome-section');
     const emailBinome = document.getElementById('email_binome');
+    const nomBinome = document.getElementById('nom_binome');
 
     if (modeRadios.length > 0) {
         modeRadios.forEach(radio => {
@@ -558,10 +597,15 @@
                 if (this.value === 'binome') {
                     binomeSection.classList.add('show');
                     emailBinome.setAttribute('required', 'required');
+                    nomBinome.setAttribute('required', 'required');
                 } else {
                     binomeSection.classList.remove('show');
                     emailBinome.removeAttribute('required');
+                    nomBinome.removeAttribute('required');
                     emailBinome.value = '';
+                    nomBinome.value = '';
+                    // Réinitialiser le résultat de vérification
+                    document.getElementById('verification-result').innerHTML = '';
                 }
                 
                 // Mise à jour visuelle des options radio
@@ -577,6 +621,77 @@
         if (checkedRadio) {
             checkedRadio.dispatchEvent(new Event('change'));
         }
+    }
+
+    // Vérification du binôme
+    const verifierBinomeBtn = document.getElementById('verifier-binome');
+    const verificationResult = document.getElementById('verification-result');
+
+    if (verifierBinomeBtn) {
+        verifierBinomeBtn.addEventListener('click', function() {
+            const email = emailBinome.value.trim();
+            const nom = nomBinome.value.trim();
+
+            if (!email || !nom) {
+                verificationResult.innerHTML = `
+                    <div class="text-red-600">
+                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                        Veuillez renseigner l'email et le nom du binôme
+                    </div>
+                `;
+                return;
+            }
+
+            // Afficher le loading
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Vérification...';
+            verificationResult.innerHTML = '';
+
+            // Appel AJAX réel pour vérifier le binôme
+            fetch('{{ route("demandes.verifier-binome") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    email: email,
+                    nom: nom
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    verificationResult.innerHTML = `
+                        <div class="text-green-600">
+                            <i class="fas fa-check-circle mr-1"></i>
+                            ${data.message}
+                        </div>
+                    `;
+                } else {
+                    verificationResult.innerHTML = `
+                        <div class="text-red-600">
+                            <i class="fas fa-times-circle mr-1"></i>
+                            ${data.message}
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                verificationResult.innerHTML = `
+                    <div class="text-red-600">
+                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                        Erreur lors de la vérification. Veuillez réessayer.
+                    </div>
+                `;
+            })
+            .finally(() => {
+                // Restaurer le bouton
+                this.disabled = false;
+                this.innerHTML = '<i class="fas fa-search mr-2"></i>Vérifier l\'existence du binôme';
+            });
+        });
     }
 
     // Gestion de l'upload de fichiers

@@ -316,14 +316,20 @@
                 <a href="{{ route('entreprise.offres.create') }}" class="action-btn primary">
                     <i class="fas fa-plus"></i> Publier une offre
                 </a>
+                <a href="{{ route('entreprise.demandes') }}" class="action-btn primary">
+                    <i class="fas fa-inbox"></i> Gérer les demandes
+                </a>
                 <a href="{{ route('entreprise.candidatures') }}" class="action-btn secondary">
-                    <i class="fas fa-inbox"></i> Voir les candidatures
+                    <i class="fas fa-file-alt"></i> Candidatures (ancien)
                 </a>
                 <a href="{{ route('entreprise.edit', $entreprise) }}" class="action-btn secondary">
                     <i class="fas fa-edit"></i> Modifier le profil
                 </a>
                 <a href="{{ route('offres.index') }}" class="action-btn secondary">
                     <i class="fas fa-eye"></i> Voir mes offres publiques
+                </a>
+                <a href="{{ route('entreprise.stages.index') }}" class="action-btn secondary">
+                    <i class="fas fa-briefcase"></i> Mes stages
                 </a>
             </div>
 

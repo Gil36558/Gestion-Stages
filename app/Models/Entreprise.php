@@ -43,6 +43,14 @@ class Entreprise extends Model
     }
 
     /**
+     * Relation avec les stages hébergés par l'entreprise
+     */
+    public function stages()
+    {
+        return $this->hasMany(Stage::class);
+    }
+
+    /**
      * Relation avec l'utilisateur propriétaire de l'entreprise
      */
     public function user(): BelongsTo

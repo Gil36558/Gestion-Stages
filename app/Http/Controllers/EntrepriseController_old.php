@@ -6,11 +6,9 @@ use App\Models\Entreprise;
 use App\Models\Offre;
 use App\Models\Candidature;
 use App\Models\DemandeStage;
-use App\Models\Stage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Carbon\Carbon;
 
 class EntrepriseController extends Controller
 {
@@ -162,39 +160,6 @@ class EntrepriseController extends Controller
     }
 
     /**
-     * Vue unifiée des demandes (candidatures + demandes directes)
-     */
-    public function demandes()
-    {
-        if (!auth()->user()->estEntreprise()) {
-            abort(403, 'Accès réservé aux entreprises');
-        }
-
-        $entreprise = auth()->user()->entreprise;
-        
-        if (!$entreprise) {
-            return redirect()->route('entreprise.create')
-                           ->with('error', 'Veuillez d\'abord créer votre profil entreprise');
-        }
-
-        // Candidatures aux offres (avec relations)
-        $candidatures = Candidature::whereHas('offre', function($query) use ($entreprise) {
-                                    $query->where('entreprise_id', $entreprise->id);
-                                })
-                                ->with(['user', 'offre'])
-                                ->latest()
-                                ->get();
-
-        // Demandes de stage directes
-        $demandes = DemandeStage::where('entreprise_id', $entreprise->id)
-                              ->with(['etudiants'])
-                              ->latest()
-                              ->get();
-
-        return view('entreprise.demandes', compact('candidatures', 'demandes'));
-    }
-
-    /**
      * Change le statut d'une candidature
      */
     public function updateCandidature(Request $request, Candidature $candidature)
@@ -211,23 +176,15 @@ class EntrepriseController extends Controller
     }
 
     /**
-     * Approuve une candidature et crée automatiquement un stage
+     * Approuve une candidature
      */
     public function approveCandidature(Request $request, Candidature $candidature)
     {
         $this->authorize('update', $candidature->offre->entreprise);
         
-        // Vérifier si un stage n'existe pas déjà pour cette candidature
-        if ($candidature->stage) {
-            return back()->with('error', 'Un stage existe déjà pour cette candidature.');
-        }
+        $candidature->update(['statut' => 'acceptee']);
         
-        $candidature->update(['statut' => 'acceptée']);
-        
-        // Créer automatiquement un stage
-        $this->creerStageDepuisCandidature($candidature);
-        
-        return back()->with('success', 'Candidature approuvée avec succès ! Un stage a été créé automatiquement.');
+        return back()->with('success', 'Candidature approuvée avec succès');
     }
 
     /**
@@ -242,7 +199,7 @@ class EntrepriseController extends Controller
         ]);
         
         $candidature->update([
-            'statut' => 'refusée',
+            'statut' => 'refusee',
             'motif_refus' => $validated['motif_refus'] ?? null
         ]);
         
@@ -250,7 +207,7 @@ class EntrepriseController extends Controller
     }
 
     /**
-     * Approuve une demande de stage et crée automatiquement un stage
+     * Approuve une demande de stage
      */
     public function approveDemandeStage(Request $request, DemandeStage $demande)
     {
@@ -259,17 +216,9 @@ class EntrepriseController extends Controller
             abort(403, 'Accès non autorisé');
         }
         
-        // Vérifier si un stage n'existe pas déjà pour cette demande
-        if ($demande->stage) {
-            return back()->with('error', 'Un stage existe déjà pour cette demande.');
-        }
-        
         $demande->update(['statut' => 'validée']);
         
-        // Créer automatiquement un stage
-        $this->creerStageDepuisDemandeStage($demande);
-        
-        return back()->with('success', 'Demande de stage approuvée avec succès ! Un stage a été créé automatiquement.');
+        return back()->with('success', 'Demande de stage approuvée avec succès');
     }
 
     /**
@@ -294,26 +243,6 @@ class EntrepriseController extends Controller
         return back()->with('success', 'Demande de stage rejetée');
     }
 
-    /**
-     * Affiche les stages de l'entreprise
-     */
-    public function stages()
-    {
-        $entreprise = auth()->user()->entreprise;
-        
-        if (!$entreprise) {
-            return redirect()->route('entreprise.create')
-                           ->with('error', 'Veuillez d\'abord créer votre profil entreprise');
-        }
-        
-        $stages = Stage::where('entreprise_id', $entreprise->id)
-                     ->with(['etudiant', 'candidature.offre', 'demandeStage'])
-                     ->orderBy('created_at', 'desc')
-                     ->paginate(10);
-
-        return view('entreprise.stages.index', compact('stages'));
-    }
-
     public function show(Entreprise $entreprise)
     {
         $entreprise->load('offres'); // très important pour éviter les requêtes multiples
@@ -321,41 +250,4 @@ class EntrepriseController extends Controller
         return view('entreprise.show', compact('entreprise'));
     }
 
-    /**
-     * Crée un stage à partir d'une candidature acceptée
-     */
-    private function creerStageDepuisCandidature(Candidature $candidature)
-    {
-        $offre = $candidature->offre;
-        
-        return Stage::create([
-            'user_id' => $candidature->user_id,
-            'entreprise_id' => $offre->entreprise_id,
-            'candidature_id' => $candidature->id,
-            'titre' => $offre->titre,
-            'description' => $offre->description,
-            'date_debut' => $offre->date_debut,
-            'date_fin' => $offre->date_fin ?? Carbon::parse($offre->date_debut)->addMonths(3),
-            'lieu' => $offre->lieu,
-            'statut' => 'en_attente_debut',
-        ]);
-    }
-
-    /**
-     * Crée un stage à partir d'une demande de stage acceptée
-     */
-    private function creerStageDepuisDemandeStage(DemandeStage $demande)
-    {
-        return Stage::create([
-            'user_id' => $demande->etudiants->first()->id,
-            'entreprise_id' => $demande->entreprise_id,
-            'demande_stage_id' => $demande->id,
-            'titre' => $demande->objet,
-            'description' => $demande->objectifs_stage,
-            'date_debut' => $demande->periode_debut,
-            'date_fin' => $demande->periode_fin,
-            'lieu' => $demande->entreprise->adresse ?? 'À définir',
-            'statut' => 'en_attente_debut',
-        ]);
-    }
 }

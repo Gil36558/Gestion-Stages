@@ -66,6 +66,7 @@ class DemandeStageController extends Controller
 
             if ($request->input('mode') === 'binome') {
                 $baseRules['email_binome'] = ['required', 'email', 'different:' . Auth::user()->email];
+                $baseRules['nom_binome'] = ['required', 'string', 'max:255'];
             }
         } elseif ($type === 'professionnel') {
             $baseRules = array_merge($baseRules, [
@@ -109,6 +110,59 @@ class DemandeStageController extends Controller
         }
 
         return redirect()->route('etudiant.dashboard')->with('success', 'Demande envoyée avec succès !');
+    }
+
+    public function verifierBinome(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'nom' => 'required|string'
+        ]);
+
+        $email = $request->input('email');
+        $nom = $request->input('nom');
+
+        // Vérifier que ce n'est pas l'utilisateur actuel
+        if ($email === Auth::user()->email) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vous ne pouvez pas vous ajouter comme binôme.'
+            ]);
+        }
+
+        // Chercher l'utilisateur avec l'email et le nom
+        $binome = User::where('email', $email)
+                     ->where('role', 'etudiant')
+                     ->first();
+
+        if (!$binome) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Aucun étudiant trouvé avec cet email. Assurez-vous que votre binôme s\'est bien inscrit.'
+            ]);
+        }
+
+        // Vérifier si le nom correspond (recherche flexible)
+        $nomBinome = strtolower(trim($binome->name));
+        $nomRecherche = strtolower(trim($nom));
+
+        // Vérification flexible du nom (contient ou est contenu)
+        if (strpos($nomBinome, $nomRecherche) === false && strpos($nomRecherche, $nomBinome) === false) {
+            return response()->json([
+                'success' => false,
+                'message' => 'L\'email existe mais le nom ne correspond pas. Nom enregistré : ' . $binome->name
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Binôme trouvé : ' . $binome->name . ' (' . $binome->email . ')',
+            'binome' => [
+                'id' => $binome->id,
+                'name' => $binome->name,
+                'email' => $binome->email
+            ]
+        ]);
     }
 
     public function create()
