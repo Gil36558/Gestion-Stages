@@ -7,12 +7,21 @@
     <div class="max-w-4xl mx-auto">
         <!-- Navigation -->
         <div class="mb-6">
-            <a href="{{ route('stages.index') }}" class="text-blue-600 hover:text-blue-800 flex items-center">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                </svg>
-                Retour à mes stages
-            </a>
+            @if(auth()->user()->estEntreprise())
+                <a href="{{ route('entreprise.stages.index') }}" class="text-blue-600 hover:text-blue-800 flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                    Retour à mes stages
+                </a>
+            @else
+                <a href="{{ route('stages.index') }}" class="text-blue-600 hover:text-blue-800 flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                    Retour à mes stages
+                </a>
+            @endif
         </div>
 
         <!-- En-tête du stage -->
@@ -40,27 +49,69 @@
                 </div>
                 <div class="text-right">
                     <span class="px-3 py-1 text-sm font-medium rounded-full
-                        @if($stage->statut_couleur === 'success') bg-green-100 text-green-800
-                        @elseif($stage->statut_couleur === 'warning') bg-yellow-100 text-yellow-800
-                        @elseif($stage->statut_couleur === 'info') bg-blue-100 text-blue-800
-                        @elseif($stage->statut_couleur === 'danger') bg-red-100 text-red-800
-                        @else bg-gray-100 text-gray-800
-                        @endif">
-                        {{ $stage->statut_francais }}
+                        @switch($stage->statut)
+                            @case('en_cours')
+                                bg-green-100 text-green-800
+                                @break
+                            @case('termine')
+                                bg-blue-100 text-blue-800
+                                @break
+                            @case('en_attente_debut')
+                                bg-yellow-100 text-yellow-800
+                                @break
+                            @case('evalue')
+                                bg-purple-100 text-purple-800
+                                @break
+                            @case('valide')
+                                bg-green-100 text-green-800
+                                @break
+                            @case('annule')
+                                bg-red-100 text-red-800
+                                @break
+                            @default
+                                bg-gray-100 text-gray-800
+                        @endswitch">
+                        @switch($stage->statut)
+                            @case('en_cours')
+                                🟢 En cours
+                                @break
+                            @case('termine')
+                                🏁 Terminé
+                                @break
+                            @case('en_attente_debut')
+                                ⏳ En attente
+                                @break
+                            @case('evalue')
+                                ⭐ Évalué
+                                @break
+                            @case('valide')
+                                ✅ Validé
+                                @break
+                            @case('annule')
+                                ❌ Annulé
+                                @break
+                            @default
+                                {{ ucfirst($stage->statut) }}
+                        @endswitch
                     </span>
                 </div>
             </div>
 
             <!-- Progression -->
             @if($stage->statut === 'en_cours')
+                @php
+                    $totalDays = $stage->date_debut->diffInDays($stage->date_fin) + 1;
+                    $daysPassed = $stage->date_debut->diffInDays(now()) + 1;
+                    $percentage = min(100, max(0, ($daysPassed / $totalDays) * 100));
+                @endphp
                 <div class="mb-4">
                     <div class="flex justify-between text-sm text-gray-600 mb-2">
                         <span>Progression du stage</span>
-                        <span>{{ $stage->pourcentage_avancement }}%</span>
+                        <span>{{ round($percentage) }}%</span>
                     </div>
                     <div class="w-full bg-gray-200 rounded-full h-3">
                         <div class="bg-blue-600 h-3 rounded-full transition-all duration-300" 
-                             style="width: {{ $stage->pourcentage_avancement }}%"></div>
+                             style="width: {{ $percentage }}%"></div>
                     </div>
                 </div>
             @endif
@@ -77,7 +128,7 @@
                 </div>
                 <div class="bg-gray-50 p-3 rounded-lg">
                     <div class="text-gray-500 mb-1">Durée</div>
-                    <div class="font-medium">{{ $stage->duree }} jours</div>
+                    <div class="font-medium">{{ $stage->date_debut->diffInDays($stage->date_fin) + 1 }} jours</div>
                 </div>
             </div>
         </div>
@@ -90,14 +141,6 @@
                     <div class="bg-white rounded-lg shadow-sm border p-6">
                         <h2 class="text-lg font-semibold text-gray-900 mb-3">Description du stage</h2>
                         <div class="text-gray-700 whitespace-pre-line">{{ $stage->description }}</div>
-                    </div>
-                @endif
-
-                <!-- Objectifs -->
-                @if($stage->objectifs)
-                    <div class="bg-white rounded-lg shadow-sm border p-6">
-                        <h2 class="text-lg font-semibold text-gray-900 mb-3">Objectifs</h2>
-                        <div class="text-gray-700 whitespace-pre-line">{{ $stage->objectifs }}</div>
                     </div>
                 @endif
 
@@ -133,7 +176,7 @@
                             @endif
                             @if($stage->note_etudiant)
                                 <div class="bg-green-50 p-4 rounded-lg">
-                                    <div class="text-sm text-green-600 mb-1">Votre auto-évaluation</div>
+                                    <div class="text-sm text-green-600 mb-1">Auto-évaluation étudiant</div>
                                     <div class="text-2xl font-bold text-green-800">{{ $stage->note_etudiant }}/20</div>
                                     @if($stage->commentaire_etudiant)
                                         <div class="text-sm text-gray-600 mt-2">{{ $stage->commentaire_etudiant }}</div>
@@ -151,63 +194,58 @@
                 <div class="bg-white rounded-lg shadow-sm border p-6">
                     <h2 class="text-lg font-semibold text-gray-900 mb-4">Actions</h2>
                     <div class="space-y-3">
-                        @if($stage->peutEtreDemarre())
-                            <button onclick="openModal('demarrer-{{ $stage->id }}')" 
-                                    class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
-                                🚀 Démarrer le stage
-                            </button>
+                        @if(auth()->user()->estEtudiant())
+                            @if($stage->statut === 'en_attente_debut')
+                                <button onclick="openModal('demarrer-{{ $stage->id }}')" 
+                                        class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                                    🚀 Démarrer le stage
+                                </button>
+                            @endif
+
+                            @if($stage->statut === 'en_cours')
+                                <button onclick="openModal('terminer-{{ $stage->id }}')" 
+                                        class="w-full bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors">
+                                    ✅ Terminer le stage
+                                </button>
+                            @endif
+
+                            @if($stage->statut === 'evalue')
+                                <button onclick="openModal('auto-evaluer-{{ $stage->id }}')" 
+                                        class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                                    ⭐ S'auto-évaluer
+                                </button>
+                            @endif
                         @endif
 
-                        @if($stage->peutEtreTermine())
-                            <button onclick="openModal('terminer-{{ $stage->id }}')" 
-                                    class="w-full bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors">
-                                ✅ Terminer le stage
-                            </button>
-                        @endif
+                        @if(auth()->user()->estEntreprise())
+                            @if($stage->statut === 'en_cours')
+                                <a href="{{ route('entreprise.journal.index', $stage) }}" 
+                                   class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors text-center block">
+                                    📔 Voir le journal
+                                </a>
+                                
+                                <a href="{{ route('entreprise.journal.calendrier', $stage) }}" 
+                                   class="w-full bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors text-center block">
+                                    📅 Vue calendrier
+                                </a>
+                            @endif
 
-                        @if($stage->statut === 'evalue')
-                            <button onclick="openModal('auto-evaluer-{{ $stage->id }}')" 
-                                    class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
-                                ⭐ S'auto-évaluer
-                            </button>
+                            @if($stage->statut === 'termine' && !$stage->note_entreprise)
+                                <button onclick="openModal('evaluer-{{ $stage->id }}')" 
+                                        class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                                    ⭐ Évaluer l'étudiant
+                                </button>
+                            @endif
+
+                            @if(in_array($stage->statut, ['en_attente_debut', 'en_cours']))
+                                <button onclick="openModal('annuler-{{ $stage->id }}')" 
+                                        class="w-full bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors">
+                                    ❌ Annuler le stage
+                                </button>
+                            @endif
                         @endif
                     </div>
                 </div>
-
-                <!-- Maître de stage -->
-                @if($stage->maitre_stage_nom)
-                    <div class="bg-white rounded-lg shadow-sm border p-6">
-                        <h2 class="text-lg font-semibold text-gray-900 mb-4">Maître de stage</h2>
-                        <div class="space-y-2 text-sm">
-                            <div>
-                                <span class="text-gray-500">Nom :</span>
-                                <span class="font-medium">{{ $stage->maitre_stage_nom }}</span>
-                            </div>
-                            @if($stage->maitre_stage_poste)
-                                <div>
-                                    <span class="text-gray-500">Poste :</span>
-                                    <span class="font-medium">{{ $stage->maitre_stage_poste }}</span>
-                                </div>
-                            @endif
-                            @if($stage->maitre_stage_email)
-                                <div>
-                                    <span class="text-gray-500">Email :</span>
-                                    <a href="mailto:{{ $stage->maitre_stage_email }}" class="text-blue-600 hover:text-blue-800">
-                                        {{ $stage->maitre_stage_email }}
-                                    </a>
-                                </div>
-                            @endif
-                            @if($stage->maitre_stage_telephone)
-                                <div>
-                                    <span class="text-gray-500">Téléphone :</span>
-                                    <a href="tel:{{ $stage->maitre_stage_telephone }}" class="text-blue-600 hover:text-blue-800">
-                                        {{ $stage->maitre_stage_telephone }}
-                                    </a>
-                                </div>
-                            @endif
-                        </div>
-                    </div>
-                @endif
 
                 <!-- Documents -->
                 <div class="bg-white rounded-lg shadow-sm border p-6">
@@ -245,31 +283,35 @@
                 <div class="bg-white rounded-lg shadow-sm border p-6">
                     <h2 class="text-lg font-semibold text-gray-900 mb-4">Origine</h2>
                     <div class="text-sm text-gray-600">
-                        @if($stage->source === 'candidature')
+                        @if($stage->candidature_id)
                             <div class="flex items-center mb-2">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                 </svg>
                                 Candidature à une offre
                             </div>
-                            <div class="pl-6">
-                                <div class="font-medium">{{ $stage->candidature->offre->titre }}</div>
-                                <div class="text-xs text-gray-500">
-                                    Candidature envoyée le {{ $stage->candidature->created_at->format('d/m/Y') }}
+                            @if($stage->candidature && $stage->candidature->offre)
+                                <div class="pl-6">
+                                    <div class="font-medium">{{ $stage->candidature->offre->titre }}</div>
+                                    <div class="text-xs text-gray-500">
+                                        Candidature envoyée le {{ $stage->candidature->created_at->format('d/m/Y') }}
+                                    </div>
                                 </div>
-                            </div>
-                        @elseif($stage->source === 'demande')
+                            @endif
+                        @elseif($stage->demande_stage_id)
                             <div class="flex items-center mb-2">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4m-6 0h6m-6 0V7a1 1 0 00-1 1v9a1 1 0 001 1h8a1 1 0 001-1V8a1 1 0 00-1-1h-1"/>
                                 </svg>
                                 Demande de stage directe
                             </div>
-                            <div class="pl-6">
-                                <div class="text-xs text-gray-500">
-                                    Demande envoyée le {{ $stage->demandeStage->created_at->format('d/m/Y') }}
+                            @if($stage->demandeStage)
+                                <div class="pl-6">
+                                    <div class="text-xs text-gray-500">
+                                        Demande envoyée le {{ $stage->demandeStage->created_at->format('d/m/Y') }}
+                                    </div>
                                 </div>
-                            </div>
+                            @endif
                         @endif
                     </div>
                 </div>
@@ -279,16 +321,28 @@
 </div>
 
 <!-- Modals -->
-@if($stage->peutEtreDemarre())
-    @include('stages.modals.demarrer', ['stage' => $stage])
+@if(auth()->user()->estEtudiant())
+    @if($stage->statut === 'en_attente_debut')
+        @include('stages.modals.demarrer', ['stage' => $stage])
+    @endif
+
+    @if($stage->statut === 'en_cours')
+        @include('stages.modals.terminer', ['stage' => $stage])
+    @endif
+
+    @if($stage->statut === 'evalue')
+        @include('stages.modals.auto-evaluer', ['stage' => $stage])
+    @endif
 @endif
 
-@if($stage->peutEtreTermine())
-    @include('stages.modals.terminer', ['stage' => $stage])
-@endif
+@if(auth()->user()->estEntreprise())
+    @if($stage->statut === 'termine' && !$stage->note_entreprise)
+        @include('entreprise.stages.modals.evaluer', ['stage' => $stage])
+    @endif
 
-@if($stage->statut === 'evalue')
-    @include('stages.modals.auto-evaluer', ['stage' => $stage])
+    @if(in_array($stage->statut, ['en_attente_debut', 'en_cours']))
+        @include('entreprise.stages.modals.annuler', ['stage' => $stage])
+    @endif
 @endif
 
 @push('scripts')

@@ -87,8 +87,8 @@ class EntrepriseController extends Controller
             'ville' => 'required|string|max:255',
         ]);
 
-        // Gestion du logo
-        if ($request->hasFile('logo')) {
+        // Gestion du logo avec vérification
+        if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
             $validated['logo'] = $request->file('logo')->store('logos/entreprises', 'public');
         }
 
@@ -104,8 +104,11 @@ class EntrepriseController extends Controller
      */
     public function edit(Entreprise $entreprise)
     {
-        $this->authorize('update', $entreprise);
-        return view('entreprises.edit', compact('entreprise'));
+        // Vérifier que l'utilisateur peut modifier cette entreprise
+        if ($entreprise->user_id !== auth()->id()) {
+            abort(403, 'Accès non autorisé');
+        }
+        return view('entreprise.edit', compact('entreprise'));
     }
 
     /**
@@ -113,7 +116,10 @@ class EntrepriseController extends Controller
      */
     public function update(Request $request, Entreprise $entreprise)
     {
-        $this->authorize('update', $entreprise);
+        // Vérifier que l'utilisateur peut modifier cette entreprise
+        if ($entreprise->user_id !== auth()->id()) {
+            abort(403, 'Accès non autorisé');
+        }
 
         $validated = $request->validate([
             'nom' => 'required|string|max:255',
@@ -124,8 +130,8 @@ class EntrepriseController extends Controller
             'taille' => 'required|in:petite,moyenne,grande',
         ]);
 
-        // Gestion du logo
-        if ($request->hasFile('logo')) {
+        // Gestion du logo avec vérification
+        if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
             // Supprime l'ancien logo si existant
             if ($entreprise->logo) {
                 Storage::disk('public')->delete($entreprise->logo);
@@ -199,7 +205,11 @@ class EntrepriseController extends Controller
      */
     public function updateCandidature(Request $request, Candidature $candidature)
     {
-        $this->authorize('update', $candidature->offre->entreprise);
+        // Vérifier que la candidature appartient à l'entreprise
+        $entreprise = auth()->user()->entreprise;
+        if (!$entreprise || $candidature->offre->entreprise_id !== $entreprise->id) {
+            abort(403, 'Accès non autorisé');
+        }
 
         $request->validate([
             'statut' => 'required|in:en_attente,acceptee,refusee'
@@ -215,7 +225,11 @@ class EntrepriseController extends Controller
      */
     public function approveCandidature(Request $request, Candidature $candidature)
     {
-        $this->authorize('update', $candidature->offre->entreprise);
+        // Vérifier que la candidature appartient à l'entreprise
+        $entreprise = auth()->user()->entreprise;
+        if (!$entreprise || $candidature->offre->entreprise_id !== $entreprise->id) {
+            abort(403, 'Accès non autorisé');
+        }
         
         // Vérifier si un stage n'existe pas déjà pour cette candidature
         if ($candidature->stage) {
@@ -235,7 +249,11 @@ class EntrepriseController extends Controller
      */
     public function rejectCandidature(Request $request, Candidature $candidature)
     {
-        $this->authorize('update', $candidature->offre->entreprise);
+        // Vérifier que la candidature appartient à l'entreprise
+        $entreprise = auth()->user()->entreprise;
+        if (!$entreprise || $candidature->offre->entreprise_id !== $entreprise->id) {
+            abort(403, 'Accès non autorisé');
+        }
         
         $validated = $request->validate([
             'motif_refus' => 'nullable|string|max:500'
@@ -255,7 +273,8 @@ class EntrepriseController extends Controller
     public function approveDemandeStage(Request $request, DemandeStage $demande)
     {
         // Vérifier que la demande appartient à l'entreprise de l'utilisateur connecté
-        if ($demande->entreprise_id !== auth()->user()->entreprise->id) {
+        $entreprise = auth()->user()->entreprise;
+        if (!$entreprise || $demande->entreprise_id !== $entreprise->id) {
             abort(403, 'Accès non autorisé');
         }
         
@@ -278,7 +297,8 @@ class EntrepriseController extends Controller
     public function rejectDemandeStage(Request $request, DemandeStage $demande)
     {
         // Vérifier que la demande appartient à l'entreprise de l'utilisateur connecté
-        if ($demande->entreprise_id !== auth()->user()->entreprise->id) {
+        $entreprise = auth()->user()->entreprise;
+        if (!$entreprise || $demande->entreprise_id !== $entreprise->id) {
             abort(403, 'Accès non autorisé');
         }
         

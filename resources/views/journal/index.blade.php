@@ -211,10 +211,17 @@
                                 </div>
                                 
                                 <div class="flex flex-col items-end gap-2">
-                                    <a href="{{ route('journal.show', [$stage, $entree]) }}" 
-                                       class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm">
-                                        Voir détails
-                                    </a>
+                                    @if(Auth::user()->role === 'entreprise')
+                                        <a href="{{ route('entreprise.journal.show', [$stage, $entree]) }}" 
+                                           class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                                            Voir détails
+                                        </a>
+                                    @else
+                                        <a href="{{ route('journal.show', [$stage, $entree]) }}" 
+                                           class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                                            Voir détails
+                                        </a>
+                                    @endif
                                     
                                     @if(Auth::user()->role === 'etudiant' && $entree->peutEtreModifiee())
                                         <a href="{{ route('journal.edit', [$stage, $entree]) }}" 

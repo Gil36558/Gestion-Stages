@@ -46,11 +46,11 @@ class DemandeStageController extends Controller
             'entreprise_id' => ['required', 'exists:entreprises,id'],
             'date_debut_souhaitee' => ['required', 'date'],
             'date_fin_souhaitee' => ['required', 'date', 'after_or_equal:date_debut_souhaitee'],
-            'cv' => ['nullable', 'file', 'mimes:pdf'],
-            'lettre_motivation' => ['nullable', 'file', 'mimes:pdf,docx'],
-            'recommandation' => ['nullable', 'file', 'mimes:pdf,docx'],
-            'piece_identite' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png'],
-            'portfolio' => ['nullable', 'file', 'mimes:pdf,zip,rar'],
+            'cv' => ['nullable', 'file', 'mimes:pdf', 'max:5120'],
+            'lettre_motivation' => ['nullable', 'file', 'mimes:pdf,docx', 'max:5120'],
+            'recommandation' => ['nullable', 'file', 'mimes:pdf,docx', 'max:5120'],
+            'piece_identite' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'portfolio' => ['nullable', 'file', 'mimes:pdf,zip,rar', 'max:10240'],
             'email_binome' => ['nullable', 'email'],
         ];
 
@@ -59,9 +59,9 @@ class DemandeStageController extends Controller
                 'mode' => ['required', Rule::in(['solo', 'binome'])],
                 'periode' => 'required|string',
                 'objectifs_stage' => 'required|string',
-                'recommandation' => 'required|file|mimes:pdf,docx',
-                'cv' => 'required|file|mimes:pdf',
-                'lettre_motivation' => 'required|file|mimes:pdf,docx'
+                'recommandation' => 'required|file|mimes:pdf,docx|max:5120',
+                'cv' => 'required|file|mimes:pdf|max:5120',
+                'lettre_motivation' => 'required|file|mimes:pdf,docx|max:5120'
             ]);
 
             if ($request->input('mode') === 'binome') {
@@ -71,28 +71,50 @@ class DemandeStageController extends Controller
         } elseif ($type === 'professionnel') {
             $baseRules = array_merge($baseRules, [
                 'date_debut_disponible' => 'required|date',
-                'cv' => 'required|file|mimes:pdf',
-                'lettre_motivation' => 'required|file|mimes:pdf,docx'
+                'cv' => 'required|file|mimes:pdf|max:5120',
+                'lettre_motivation' => 'required|file|mimes:pdf,docx|max:5120'
             ]);
         }
 
         $request->validate($baseRules);
 
-        $cv = $request->file('cv')?->store('demandes/cv', 'public');
-        $lettre = $request->file('lettre_motivation')?->store('demandes/lettres', 'public');
-        $recommandation = $request->file('recommandation')?->store('demandes/recommandations', 'public');
-        $piece = $request->file('piece_identite')?->store('demandes/pieces', 'public');
-        $portfolio = $request->file('portfolio')?->store('demandes/portfolios', 'public');
+        // Upload des fichiers avec vérification explicite
+        $cv = null;
+        if ($request->hasFile('cv') && $request->file('cv')->isValid()) {
+            $cv = $request->file('cv')->store('demandes/cv', 'public');
+        }
+
+        $lettre = null;
+        if ($request->hasFile('lettre_motivation') && $request->file('lettre_motivation')->isValid()) {
+            $lettre = $request->file('lettre_motivation')->store('demandes/lettres', 'public');
+        }
+
+        $recommandation = null;
+        if ($request->hasFile('recommandation') && $request->file('recommandation')->isValid()) {
+            $recommandation = $request->file('recommandation')->store('demandes/recommandations', 'public');
+        }
+
+        $piece = null;
+        if ($request->hasFile('piece_identite') && $request->file('piece_identite')->isValid()) {
+            $piece = $request->file('piece_identite')->store('demandes/pieces', 'public');
+        }
+
+        $portfolio = null;
+        if ($request->hasFile('portfolio') && $request->file('portfolio')->isValid()) {
+            $portfolio = $request->file('portfolio')->store('demandes/portfolios', 'public');
+        }
 
         $donnees = $request->except([
             'cv', 'lettre_motivation', 'recommandation', 'piece_identite', 'portfolio', 'email_binome', 'date_debut_souhaitee', 'date_fin_souhaitee'
         ]);
 
-        $donnees['cv'] = $cv;
-        $donnees['lettre_motivation'] = $lettre;
-        $donnees['recommandation'] = $recommandation;
-        $donnees['piece_identite'] = $piece;
-        $donnees['portfolio'] = $portfolio;
+        // Ajouter les chemins des fichiers seulement s'ils existent
+        if ($cv) $donnees['cv'] = $cv;
+        if ($lettre) $donnees['lettre_motivation'] = $lettre;
+        if ($recommandation) $donnees['recommandation'] = $recommandation;
+        if ($piece) $donnees['piece_identite'] = $piece;
+        if ($portfolio) $donnees['portfolio'] = $portfolio;
+
         $donnees['periode_debut'] = $request->date_debut_souhaitee;
         $donnees['periode_fin'] = $request->date_fin_souhaitee;
         $donnees['objet'] = $request->input('objet') ?? null;
@@ -110,6 +132,38 @@ class DemandeStageController extends Controller
         }
 
         return redirect()->route('etudiant.dashboard')->with('success', 'Demande envoyée avec succès !');
+    }
+
+    /**
+     * Affiche les détails d'une demande de stage
+     */
+    public function show(DemandeStage $demande)
+    {
+        // Vérifier que l'utilisateur peut voir cette demande
+        $user = auth()->user();
+        
+        // Si c'est une entreprise, vérifier qu'elle est propriétaire de la demande
+        if ($user->estEntreprise()) {
+            $entreprise = $user->entreprise;
+            if (!$entreprise || $demande->entreprise_id !== $entreprise->id) {
+                abort(403, 'Accès non autorisé');
+            }
+        }
+        // Si c'est un étudiant, vérifier qu'il est lié à cette demande
+        elseif ($user->estEtudiant()) {
+            if (!$demande->etudiants->contains($user->id)) {
+                abort(403, 'Accès non autorisé');
+            }
+        }
+        // Si c'est un admin, accès autorisé
+        elseif (!$user->estAdmin()) {
+            abort(403, 'Accès non autorisé');
+        }
+
+        // Charger les relations nécessaires
+        $demande->load(['entreprise', 'etudiants', 'offre']);
+
+        return view('demandes.show', compact('demande'));
     }
 
     public function verifierBinome(Request $request)
@@ -170,5 +224,3 @@ class DemandeStageController extends Controller
         abort(404);
     }
 }
-
-

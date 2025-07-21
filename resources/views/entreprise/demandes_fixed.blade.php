@@ -1,4 +1,4 @@
-@extends('layouts.app')
+Mmem@extends('layouts.app')
 
 @section('title', 'Demandes de stage reçues')
 

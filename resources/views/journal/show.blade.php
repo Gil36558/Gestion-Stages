@@ -27,10 +27,17 @@
                         </a>
                     @endif
                     
-                    <a href="{{ route('journal.index', $stage) }}" 
-                       class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">
-                        ← Retour au journal
-                    </a>
+                    @if(Auth::user()->role === 'entreprise')
+                        <a href="{{ route('entreprise.journal.index', $stage) }}" 
+                           class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">
+                            ← Retour au journal
+                        </a>
+                    @else
+                        <a href="{{ route('journal.index', $stage) }}" 
+                           class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">
+                            ← Retour au journal
+                        </a>
+                    @endif
                 </div>
             </div>
         </div>
@@ -143,10 +150,17 @@
                                 <div class="font-medium text-gray-900 truncate">{{ $fichier['nom_original'] }}</div>
                                 <div class="text-sm text-gray-500">{{ number_format($fichier['taille'] / 1024, 1) }} KB</div>
                             </div>
-                            <a href="{{ route('journal.fichier', [$stage, $journal, $index]) }}" 
-                               class="ml-3 bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors">
-                                Télécharger
-                            </a>
+                            @if(Auth::user()->role === 'entreprise')
+                                <a href="{{ route('entreprise.journal.fichier', [$stage, $journal, $index]) }}" 
+                                   class="ml-3 bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors">
+                                    Télécharger
+                                </a>
+                            @else
+                                <a href="{{ route('journal.fichier', [$stage, $journal, $index]) }}" 
+                                   class="ml-3 bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors">
+                                    Télécharger
+                                </a>
+                            @endif
                         </div>
                     @endforeach
                 </div>

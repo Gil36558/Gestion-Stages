@@ -37,8 +37,11 @@ class StageController extends Controller
             abort(403, 'Accès non autorisé');
         }
         
-        if (Auth::user()->role === 'entreprise' && $stage->entreprise_id !== Auth::user()->entreprise->id) {
-            abort(403, 'Accès non autorisé');
+        if (Auth::user()->role === 'entreprise') {
+            $entreprise = Auth::user()->entreprise;
+            if (!$entreprise || $stage->entreprise_id !== $entreprise->id) {
+                abort(403, 'Accès non autorisé');
+            }
         }
 
         $stage->load(['entreprise', 'etudiant', 'candidature.offre', 'demandeStage']);
@@ -99,24 +102,17 @@ class StageController extends Controller
         }
 
         $validated = $request->validate([
-            'maitre_stage_nom' => 'required|string|max:255',
-            'maitre_stage_email' => 'required|email|max:255',
-            'maitre_stage_telephone' => 'nullable|string|max:20',
-            'maitre_stage_poste' => 'nullable|string|max:255',
-            'objectifs' => 'nullable|string',
+            'date_debut_effective' => 'required|date|before_or_equal:today',
+            'commentaire_debut' => 'nullable|string|max:1000',
         ]);
 
         $stage->update([
             'statut' => 'en_cours',
-            'date_debut_reel' => Carbon::now(),
-            'maitre_stage_nom' => $validated['maitre_stage_nom'],
-            'maitre_stage_email' => $validated['maitre_stage_email'],
-            'maitre_stage_telephone' => $validated['maitre_stage_telephone'] ?? null,
-            'maitre_stage_poste' => $validated['maitre_stage_poste'] ?? null,
-            'objectifs' => $validated['objectifs'] ?? null,
+            'date_debut_reel' => Carbon::parse($validated['date_debut_effective']),
+            'commentaire_etudiant' => $validated['commentaire_debut'] ?? null,
         ]);
 
-        return back()->with('success', 'Stage démarré avec succès !');
+        return back()->with('success', 'Stage démarré avec succès ! Vous pouvez maintenant commencer votre journal de suivi.');
     }
 
     /**
@@ -163,7 +159,12 @@ class StageController extends Controller
     public function evaluer(Request $request, Stage $stage)
     {
         // Vérifier les permissions (seule l'entreprise peut évaluer)
-        if (Auth::user()->role !== 'entreprise' || $stage->entreprise_id !== Auth::user()->entreprise->id) {
+        if (Auth::user()->role !== 'entreprise') {
+            abort(403, 'Accès non autorisé');
+        }
+
+        $entreprise = Auth::user()->entreprise;
+        if (!$entreprise || $stage->entreprise_id !== $entreprise->id) {
             abort(403, 'Accès non autorisé');
         }
 
@@ -233,8 +234,11 @@ class StageController extends Controller
             abort(403, 'Accès non autorisé');
         }
         
-        if (Auth::user()->role === 'entreprise' && $stage->entreprise_id !== Auth::user()->entreprise->id) {
-            abort(403, 'Accès non autorisé');
+        if (Auth::user()->role === 'entreprise') {
+            $entreprise = Auth::user()->entreprise;
+            if (!$entreprise || $stage->entreprise_id !== $entreprise->id) {
+                abort(403, 'Accès non autorisé');
+            }
         }
 
         $filePath = match($type) {
@@ -248,7 +252,7 @@ class StageController extends Controller
             abort(404, 'Document non trouvé');
         }
 
-        return Storage::disk('public')->download($filePath);
+        return response()->download(Storage::disk('public')->path($filePath));
     }
 
     /**
@@ -257,7 +261,12 @@ class StageController extends Controller
     public function annuler(Request $request, Stage $stage)
     {
         // Seule l'entreprise peut annuler un stage
-        if (Auth::user()->role !== 'entreprise' || $stage->entreprise_id !== Auth::user()->entreprise->id) {
+        if (Auth::user()->role !== 'entreprise') {
+            abort(403, 'Accès non autorisé');
+        }
+
+        $entreprise = Auth::user()->entreprise;
+        if (!$entreprise || $stage->entreprise_id !== $entreprise->id) {
             abort(403, 'Accès non autorisé');
         }
 
@@ -282,7 +291,19 @@ class StageController extends Controller
      */
     public function indexEntreprise()
     {
-        $entreprise = Auth::user()->entreprise;
+        $user = Auth::user();
+        
+        // Vérifier que l'utilisateur est bien une entreprise
+        if ($user->role !== 'entreprise') {
+            return redirect()->route('dashboard')->with('error', 'Accès non autorisé');
+        }
+        
+        $entreprise = $user->entreprise;
+        
+        // Vérifier que l'entreprise existe
+        if (!$entreprise) {
+            return redirect()->route('dashboard')->with('error', 'Profil entreprise non trouvé');
+        }
         
         $stages = Stage::where('entreprise_id', $entreprise->id)
             ->with(['etudiant', 'candidature.offre', 'demandeStage'])

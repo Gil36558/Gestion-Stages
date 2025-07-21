@@ -22,8 +22,11 @@ class JournalStageController extends Controller
         }
 
         // Vérifier que l'entreprise peut accéder à ce stage
-        if (Auth::user()->role === 'entreprise' && $stage->entreprise_id !== Auth::user()->entreprise->id) {
-            abort(403, 'Accès non autorisé');
+        if (Auth::user()->role === 'entreprise') {
+            $entreprise = Auth::user()->entreprise;
+            if (!$entreprise || $stage->entreprise_id !== $entreprise->id) {
+                abort(403, 'Accès non autorisé');
+            }
         }
 
         $stage->load(['entreprise', 'etudiant']);
@@ -100,17 +103,19 @@ class JournalStageController extends Controller
             return back()->withErrors(['date_activite' => 'Une entrée existe déjà pour cette date.']);
         }
 
-        // Gérer l'upload des fichiers
+        // Gérer l'upload des fichiers avec vérification
         $fichiers = [];
         if ($request->hasFile('fichiers')) {
             foreach ($request->file('fichiers') as $fichier) {
-                $path = $fichier->store('journal/' . $stage->id, 'public');
-                $fichiers[] = [
-                    'nom_original' => $fichier->getClientOriginalName(),
-                    'chemin' => $path,
-                    'taille' => $fichier->getSize(),
-                    'type' => $fichier->getMimeType(),
-                ];
+                if ($fichier->isValid()) {
+                    $path = $fichier->store('journal/' . $stage->id, 'public');
+                    $fichiers[] = [
+                        'nom_original' => $fichier->getClientOriginalName(),
+                        'chemin' => $path,
+                        'taille' => $fichier->getSize(),
+                        'type' => $fichier->getMimeType(),
+                    ];
+                }
             }
         }
 
@@ -144,8 +149,11 @@ class JournalStageController extends Controller
             abort(403, 'Accès non autorisé');
         }
         
-        if (Auth::user()->role === 'entreprise' && $stage->entreprise_id !== Auth::user()->entreprise->id) {
-            abort(403, 'Accès non autorisé');
+        if (Auth::user()->role === 'entreprise') {
+            $entreprise = Auth::user()->entreprise;
+            if (!$entreprise || $stage->entreprise_id !== $entreprise->id) {
+                abort(403, 'Accès non autorisé');
+            }
         }
 
         $journal->load(['commentateur']);
@@ -197,17 +205,19 @@ class JournalStageController extends Controller
             'statut' => 'required|in:brouillon,soumis',
         ]);
 
-        // Gérer l'upload des nouveaux fichiers
+        // Gérer l'upload des nouveaux fichiers avec vérification
         $fichiers = $journal->fichiers_joints ?? [];
         if ($request->hasFile('fichiers')) {
             foreach ($request->file('fichiers') as $fichier) {
-                $path = $fichier->store('journal/' . $stage->id, 'public');
-                $fichiers[] = [
-                    'nom_original' => $fichier->getClientOriginalName(),
-                    'chemin' => $path,
-                    'taille' => $fichier->getSize(),
-                    'type' => $fichier->getMimeType(),
-                ];
+                if ($fichier->isValid()) {
+                    $path = $fichier->store('journal/' . $stage->id, 'public');
+                    $fichiers[] = [
+                        'nom_original' => $fichier->getClientOriginalName(),
+                        'chemin' => $path,
+                        'taille' => $fichier->getSize(),
+                        'type' => $fichier->getMimeType(),
+                    ];
+                }
             }
         }
 
@@ -279,7 +289,12 @@ class JournalStageController extends Controller
     public function commenter(Request $request, Stage $stage, JournalStage $journal)
     {
         // Seules les entreprises peuvent commenter
-        if (Auth::user()->role !== 'entreprise' || $stage->entreprise_id !== Auth::user()->entreprise->id) {
+        if (Auth::user()->role !== 'entreprise') {
+            abort(403, 'Accès non autorisé');
+        }
+
+        $entreprise = Auth::user()->entreprise;
+        if (!$entreprise || $stage->entreprise_id !== $entreprise->id) {
             abort(403, 'Accès non autorisé');
         }
 
@@ -318,8 +333,11 @@ class JournalStageController extends Controller
             abort(403, 'Accès non autorisé');
         }
         
-        if (Auth::user()->role === 'entreprise' && $stage->entreprise_id !== Auth::user()->entreprise->id) {
-            abort(403, 'Accès non autorisé');
+        if (Auth::user()->role === 'entreprise') {
+            $entreprise = Auth::user()->entreprise;
+            if (!$entreprise || $stage->entreprise_id !== $entreprise->id) {
+                abort(403, 'Accès non autorisé');
+            }
         }
 
         $fichiers = $journal->fichiers_joints ?? [];
@@ -346,7 +364,12 @@ class JournalStageController extends Controller
     public function calendrier(Stage $stage)
     {
         // Seules les entreprises peuvent voir le calendrier
-        if (Auth::user()->role !== 'entreprise' || $stage->entreprise_id !== Auth::user()->entreprise->id) {
+        if (Auth::user()->role !== 'entreprise') {
+            abort(403, 'Accès non autorisé');
+        }
+
+        $entreprise = Auth::user()->entreprise;
+        if (!$entreprise || $stage->entreprise_id !== $entreprise->id) {
             abort(403, 'Accès non autorisé');
         }
 

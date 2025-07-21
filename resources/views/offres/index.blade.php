@@ -462,10 +462,10 @@
                         
                         @auth
                             @if(auth()->user()->role === 'etudiant')
-                                <a href="{{ route('demande.stage.choix', ['entreprise_id' => $offre->entreprise_id]) }}" 
+                                <a href="{{ route('offres.show', $offre) }}" 
                                    class="btn-candidater">
                                     <i class="fas fa-paper-plane"></i>
-                                    Candidater
+                                    Voir détails
                                 </a>
                             @else
                                 <a href="{{ route('offres.show', $offre) }}" class="btn-candidater">

@@ -88,15 +88,15 @@ class CandidatureController extends Controller
             return back()->with('error', 'Vous avez déjà candidaté à cette offre.');
         }
 
-        // Gérer l'upload des fichiers
+        // Gérer l'upload des fichiers avec vérification
         $cvPath = null;
         $lettrePath = null;
 
-        if ($request->hasFile('cv')) {
+        if ($request->hasFile('cv') && $request->file('cv')->isValid()) {
             $cvPath = $request->file('cv')->store('candidatures/cv', 'public');
         }
 
-        if ($request->hasFile('lettre')) {
+        if ($request->hasFile('lettre') && $request->file('lettre')->isValid()) {
             $lettrePath = $request->file('lettre')->store('candidatures/lettres', 'public');
         }
 

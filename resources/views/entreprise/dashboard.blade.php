@@ -99,6 +99,12 @@
         color: #92400e;
     }
 
+    .alert-success {
+        background: rgba(16, 185, 129, 0.1);
+        border-color: var(--success-color);
+        color: #065f46;
+    }
+
     .card-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -317,19 +323,16 @@
                     <i class="fas fa-plus"></i> Publier une offre
                 </a>
                 <a href="{{ route('entreprise.demandes') }}" class="action-btn primary">
-                    <i class="fas fa-inbox"></i> Gérer les demandes
+                    <i class="fas fa-inbox"></i> Candidatures & Demandes
                 </a>
-                <a href="{{ route('entreprise.candidatures') }}" class="action-btn secondary">
-                    <i class="fas fa-file-alt"></i> Candidatures (ancien)
+                <a href="{{ route('entreprise.stages.index') }}" class="action-btn primary">
+                    <i class="fas fa-briefcase"></i> Mes stages
                 </a>
                 <a href="{{ route('entreprise.edit', $entreprise) }}" class="action-btn secondary">
                     <i class="fas fa-edit"></i> Modifier le profil
                 </a>
                 <a href="{{ route('offres.index') }}" class="action-btn secondary">
                     <i class="fas fa-eye"></i> Voir mes offres publiques
-                </a>
-                <a href="{{ route('entreprise.stages.index') }}" class="action-btn secondary">
-                    <i class="fas fa-briefcase"></i> Mes stages
                 </a>
             </div>
 
