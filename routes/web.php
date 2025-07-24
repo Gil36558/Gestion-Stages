@@ -62,9 +62,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Candidatures aux offres (nouveau système)
         Route::prefix('candidatures')->group(function () {
             Route::get('/mes-candidatures', [CandidatureController::class, 'index'])->name('candidatures.index');
-            Route::post('/store', [CandidatureController::class, 'store'])->name('candidatures.store');
             Route::patch('/{candidature}/cancel', [CandidatureController::class, 'cancel'])->name('candidatures.cancel');
+            Route::delete('/{candidature}', [CandidatureController::class, 'destroy'])->name('candidatures.destroy');
         });
+        
+        // Route candidature store (hors du prefix pour être accessible via POST /candidatures)
+        Route::post('/candidatures', [CandidatureController::class, 'store'])->name('candidatures.store');
 
         // Stages de l'étudiant
         Route::prefix('stages')->group(function () {
@@ -119,17 +122,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Vue unifiée des demandes (candidatures + demandes directes)
         Route::get('/entreprise/demandes', [EntrepriseController::class, 'demandes'])->name('entreprise.demandes');
 
-        // Actions sur les candidatures (ancien système)
-        Route::patch('/entreprise/candidatures/{candidature}/approve', [EntrepriseController::class, 'approveCandidature'])->name('entreprise.candidatures.approve');
-        Route::patch('/entreprise/candidatures/{candidature}/reject', [EntrepriseController::class, 'rejectCandidature'])->name('entreprise.candidatures.reject');
-        
-        // Actions sur les demandes de stage
+        // Actions sur les demandes de stage (ancien système - demandes directes)
         Route::patch('/entreprise/demandes/{demande}/approve', [EntrepriseController::class, 'approveDemandeStage'])->name('entreprise.demandes.approve');
         Route::patch('/entreprise/demandes/{demande}/reject', [EntrepriseController::class, 'rejectDemandeStage'])->name('entreprise.demandes.reject');
 
         // Actions sur les candidatures aux offres (nouveau système)
-        Route::post('/candidatures/{candidature}/approve', [CandidatureController::class, 'approve'])->name('candidatures.approve');
-        Route::post('/candidatures/{candidature}/reject', [CandidatureController::class, 'reject'])->name('candidatures.reject');
+        Route::patch('/entreprise/candidatures-offres/{candidature}/approve', [CandidatureController::class, 'approve'])->name('entreprise.candidatures.offres.approve');
+        Route::patch('/entreprise/candidatures-offres/{candidature}/reject', [CandidatureController::class, 'reject'])->name('entreprise.candidatures.offres.reject');
 
         // Stages de l'entreprise
         Route::prefix('entreprise/stages')->group(function () {

@@ -1,8 +1,8 @@
-<!-- Modal de candidature -->
+<!-- Modal de candidature DEBUG -->
 <div id="candidature-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 modal-backdrop">
     <div class="flex items-center justify-center min-h-screen p-4">
         <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-screen overflow-y-auto">
-            <form action="{{ route('candidatures.store') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('candidatures.store') }}" method="POST" enctype="multipart/form-data" id="candidature-form">
                 @csrf
                 <input type="hidden" name="offre_id" value="{{ $offre->id }}">
                 
@@ -50,6 +50,9 @@
                         <p class="text-xs text-gray-500 mt-1">
                             Présentez-vous brièvement et expliquez votre motivation pour ce stage.
                         </p>
+                        @error('message')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <!-- CV -->
@@ -64,8 +67,11 @@
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                required>
                         <p class="text-xs text-gray-500 mt-1">
-                            Formats acceptés : PDF, DOC, DOCX (max 2MB)
+                            Formats acceptés : PDF, DOC, DOCX (max 5MB)
                         </p>
+                        @error('cv')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <!-- Lettre de motivation -->
@@ -79,73 +85,11 @@
                                accept=".pdf,.doc,.docx"
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         <p class="text-xs text-gray-500 mt-1">
-                            Formats acceptés : PDF, DOC, DOCX (max 2MB)
+                            Formats acceptés : PDF, DOC, DOCX (max 5MB)
                         </p>
-                    </div>
-
-                    <!-- Informations complémentaires -->
-                    <div>
-                        <label for="informations_complementaires" class="block text-sm font-medium text-gray-700 mb-2">
-                            Informations complémentaires (optionnel)
-                        </label>
-                        <textarea id="informations_complementaires" 
-                                  name="informations_complementaires" 
-                                  rows="3"
-                                  placeholder="Ajoutez toute information que vous jugez utile (disponibilités, contraintes, etc.)"
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">{{ old('informations_complementaires') }}</textarea>
-                    </div>
-
-                    <!-- Disponibilités -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="date_debut_disponible" class="block text-sm font-medium text-gray-700 mb-2">
-                                Date de début souhaitée
-                            </label>
-                            <input type="date" 
-                                   id="date_debut_disponible" 
-                                   name="date_debut_disponible" 
-                                   value="{{ old('date_debut_disponible', $offre->date_debut->format('Y-m-d')) }}"
-                                   min="{{ $offre->date_debut->format('Y-m-d') }}"
-                                   @if($offre->date_fin) max="{{ $offre->date_fin->format('Y-m-d') }}" @endif
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        </div>
-                        <div>
-                            <label for="duree_souhaitee" class="block text-sm font-medium text-gray-700 mb-2">
-                                Durée souhaitée (en semaines)
-                            </label>
-                            <input type="number" 
-                                   id="duree_souhaitee" 
-                                   name="duree_souhaitee" 
-                                   min="1" 
-                                   max="52"
-                                   value="{{ old('duree_souhaitee') }}"
-                                   placeholder="Ex: 12"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        </div>
-                    </div>
-
-                    <!-- Compétences -->
-                    <div>
-                        <label for="competences" class="block text-sm font-medium text-gray-700 mb-2">
-                            Vos compétences principales (optionnel)
-                        </label>
-                        <textarea id="competences" 
-                                  name="competences" 
-                                  rows="3"
-                                  placeholder="Listez vos compétences techniques et soft skills pertinentes pour ce stage..."
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">{{ old('competences') }}</textarea>
-                    </div>
-
-                    <!-- Expériences -->
-                    <div>
-                        <label for="experiences" class="block text-sm font-medium text-gray-700 mb-2">
-                            Expériences pertinentes (optionnel)
-                        </label>
-                        <textarea id="experiences" 
-                                  name="experiences" 
-                                  rows="3"
-                                  placeholder="Décrivez brièvement vos expériences professionnelles ou projets pertinents..."
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">{{ old('experiences') }}</textarea>
+                        @error('lettre')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <!-- Confirmation -->
@@ -161,6 +105,20 @@
                                 Je comprends que ma candidature sera transmise à l'entreprise.
                             </span>
                         </label>
+                        @error('confirmation')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Debug info -->
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <h5 class="font-medium text-yellow-800 mb-2">Debug Info:</h5>
+                        <div class="text-xs text-yellow-700">
+                            <div>Route: {{ route('candidatures.store') }}</div>
+                            <div>Offre ID: {{ $offre->id }}</div>
+                            <div>User ID: {{ auth()->id() }}</div>
+                            <div>User Role: {{ auth()->user()->role }}</div>
+                        </div>
                     </div>
                 </div>
 
@@ -173,10 +131,32 @@
                     </button>
                     <button type="submit" 
                             class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                        📝 Envoyer ma candidature
+                        📧 Envoyer ma candidature
                     </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<script>
+document.getElementById('candidature-form').addEventListener('submit', function(e) {
+    console.log('Form submitted!');
+    console.log('Form data:', new FormData(this));
+    
+    // Vérifier les champs requis
+    const message = document.getElementById('message').value;
+    const cv = document.getElementById('cv').files[0];
+    const confirmation = document.querySelector('input[name="confirmation"]').checked;
+    
+    console.log('Message:', message);
+    console.log('CV:', cv);
+    console.log('Confirmation:', confirmation);
+    
+    if (!message || !cv || !confirmation) {
+        e.preventDefault();
+        alert('Veuillez remplir tous les champs obligatoires');
+        return false;
+    }
+});
+</script>

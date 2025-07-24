@@ -9,9 +9,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
-use App\Notifications\CandidatureRecueNotification;
-use App\Notifications\CandidatureEnvoyeeNotification;
 
 class CandidatureController extends Controller
 {
@@ -55,12 +52,12 @@ class CandidatureController extends Controller
     }
 
     /**
-     * Enregistre une nouvelle candidature - VERSION CORRIGÉE
+     * Enregistre une nouvelle candidature
      */
     public function store(Request $request)
     {
         // Log pour debug
-        Log::info('=== CANDIDATURE STORE COMPLETE ===');
+        Log::info('=== CANDIDATURE STORE DEBUG ===');
         Log::info('User ID: ' . Auth::id());
         Log::info('User Role: ' . Auth::user()->role);
         Log::info('Request data: ', $request->all());
@@ -71,23 +68,16 @@ class CandidatureController extends Controller
             abort(403, 'Accès réservé aux étudiants');
         }
 
-        // Validation COMPLÈTE avec tous les champs du formulaire
+        // Validation simplifiée pour le debug
         $validated = $request->validate([
             'offre_id' => 'required|exists:offres,id',
-            'message' => 'required|string|min:5|max:2000', // Réduit le minimum
-            'cv' => 'required|file|mimes:pdf,doc,docx|max:5120',
-            'lettre' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
+            'message' => 'required|string|min:10|max:2000', // Réduit à 10 caractères minimum
+            'cv' => 'required|file|mimes:pdf,doc,docx,txt|max:5120', // Ajout de txt pour les tests
+            'lettre' => 'nullable|file|mimes:pdf,doc,docx,txt|max:5120',
             'confirmation' => 'required|accepted',
-            
-            // Champs supplémentaires du formulaire
-            'informations_complementaires' => 'nullable|string|max:1000',
-            'date_debut_disponible' => 'nullable|date',
-            'duree_souhaitee' => 'nullable|integer|min:1|max:52',
-            'competences' => 'nullable|string|max:1000',
-            'experiences' => 'nullable|string|max:1000',
         ]);
 
-        Log::info('Validation passée avec succès');
+        Log::info('Validation passée');
 
         $offre = Offre::findOrFail($validated['offre_id']);
         Log::info('Offre trouvée: ' . $offre->titre);
@@ -108,19 +98,18 @@ class CandidatureController extends Controller
             return back()->with('error', 'Vous avez déjà candidaté à cette offre.');
         }
 
-        // Gérer l'upload des fichiers avec vérification renforcée
+        // Gérer l'upload des fichiers avec vérification
         $cvPath = null;
         $lettrePath = null;
 
         // Upload du CV (requis)
         if ($request->hasFile('cv') && $request->file('cv')->isValid()) {
             try {
-                $cvFile = $request->file('cv');
-                $cvPath = $cvFile->store('candidatures/cv', 'public');
-                Log::info('CV uploadé avec succès: ' . $cvPath);
+                $cvPath = $request->file('cv')->store('candidatures/cv', 'public');
+                Log::info('CV uploadé: ' . $cvPath);
             } catch (\Exception $e) {
                 Log::error('Erreur upload CV: ' . $e->getMessage());
-                return back()->withErrors(['cv' => 'Erreur lors de l\'upload du CV: ' . $e->getMessage()])
+                return back()->withErrors(['cv' => 'Erreur lors de l\'upload du CV.'])
                             ->withInput();
             }
         } else {
@@ -132,55 +121,29 @@ class CandidatureController extends Controller
         // Upload de la lettre (optionnel)
         if ($request->hasFile('lettre') && $request->file('lettre')->isValid()) {
             try {
-                $lettreFile = $request->file('lettre');
-                $lettrePath = $lettreFile->store('candidatures/lettres', 'public');
-                Log::info('Lettre uploadée avec succès: ' . $lettrePath);
+                $lettrePath = $request->file('lettre')->store('candidatures/lettres', 'public');
+                Log::info('Lettre uploadée: ' . $lettrePath);
             } catch (\Exception $e) {
                 Log::error('Erreur upload lettre: ' . $e->getMessage());
                 // Continue même si la lettre échoue car elle est optionnelle
             }
         }
 
-        // Créer la candidature avec TOUS les champs
+        // Créer la candidature
         try {
-            $candidatureData = [
+            $candidature = Candidature::create([
                 'user_id' => Auth::id(),
                 'offre_id' => $offre->id,
                 'message' => $validated['message'],
                 'cv' => $cvPath,
                 'lettre' => $lettrePath,
                 'statut' => 'en attente',
-                
-                // Champs supplémentaires
-                'informations_complementaires' => $validated['informations_complementaires'] ?? null,
-                'date_debut_disponible' => $validated['date_debut_disponible'] ?? null,
-                'duree_souhaitee' => $validated['duree_souhaitee'] ?? null,
-                'competences' => $validated['competences'] ?? null,
-                'experiences' => $validated['experiences'] ?? null,
-            ];
-
-            $candidature = Candidature::create($candidatureData);
+            ]);
 
             Log::info('Candidature créée avec succès: ID ' . $candidature->id);
 
-            // Envoyer les notifications
-            try {
-                // Notification à l'étudiant
-                Auth::user()->notify(new CandidatureEnvoyeeNotification($candidature));
-                
-                // Notification à l'entreprise
-                if ($offre->entreprise && $offre->entreprise->user) {
-                    $offre->entreprise->user->notify(new CandidatureRecueNotification($candidature));
-                }
-                
-                Log::info('Notifications envoyées avec succès');
-            } catch (\Exception $e) {
-                Log::error('Erreur envoi notifications: ' . $e->getMessage());
-                // Continue même si les notifications échouent
-            }
-
             return redirect()->route('candidatures.show', $candidature)
-                            ->with('success', 'Votre candidature a été envoyée avec succès ! L\'entreprise a été notifiée.');
+                            ->with('success', 'Votre candidature a été envoyée avec succès !');
 
         } catch (\Exception $e) {
             Log::error('Erreur création candidature: ' . $e->getMessage());
@@ -223,13 +186,6 @@ class CandidatureController extends Controller
             'date_reponse' => now(),
         ]);
 
-        // Envoyer notification à l'étudiant
-        try {
-            $candidature->user->notify(new \App\Notifications\CandidatureAccepteeNotification($candidature));
-        } catch (\Exception $e) {
-            Log::error('Erreur notification acceptation: ' . $e->getMessage());
-        }
-
         // Créer automatiquement un stage si le modèle Stage existe
         if (class_exists('App\Models\Stage')) {
             try {
@@ -245,15 +201,13 @@ class CandidatureController extends Controller
                     'statut' => 'en_attente_debut',
                     'objectifs' => "Stage basé sur l'offre : " . $candidature->offre->titre,
                 ]);
-                
-                Log::info('Stage créé automatiquement: ID ' . $stage->id);
             } catch (\Exception $e) {
                 Log::error('Erreur création stage: ' . $e->getMessage());
                 // Continue même si la création du stage échoue
             }
         }
 
-        return back()->with('success', 'Candidature acceptée ! L\'étudiant a été notifié.');
+        return back()->with('success', 'Candidature acceptée !');
     }
 
     /**
@@ -284,14 +238,7 @@ class CandidatureController extends Controller
             'date_reponse' => now(),
         ]);
 
-        // Envoyer notification à l'étudiant
-        try {
-            $candidature->user->notify(new \App\Notifications\CandidatureRefuseeNotification($candidature));
-        } catch (\Exception $e) {
-            Log::error('Erreur notification refus: ' . $e->getMessage());
-        }
-
-        return back()->with('success', 'Candidature refusée. L\'étudiant a été notifié.');
+        return back()->with('success', 'Candidature refusée.');
     }
 
     /**

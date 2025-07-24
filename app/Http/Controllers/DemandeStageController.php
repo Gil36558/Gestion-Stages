@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use App\Notifications\BinomeAjouteNotification;
 
@@ -127,7 +128,14 @@ class DemandeStageController extends Controller
             $binome = User::where('email', $request->email_binome)->first();
             if ($binome && $binome->id !== Auth::id()) {
                 $demande->etudiants()->attach($binome->id);
-                $binome->notify(new BinomeAjouteNotification($demande));
+                
+                // Envoyer l'invitation au binôme
+                try {
+                    $binome->notify(new \App\Notifications\InvitationBinomeNotification($demande, Auth::user()));
+                    Log::info('Invitation binôme envoyée à: ' . $binome->email);
+                } catch (\Exception $e) {
+                    Log::error('Erreur envoi invitation binôme: ' . $e->getMessage());
+                }
             }
         }
 

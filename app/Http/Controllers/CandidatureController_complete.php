@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Notifications\CandidatureRecueNotification;
 use App\Notifications\CandidatureEnvoyeeNotification;
 
-class CandidatureController extends Controller
+class CandidatureController_complete extends Controller
 {
     /**
      * Affiche les candidatures de l'étudiant connecté

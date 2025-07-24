@@ -1,0 +1,7 @@
+# DIAGNOSTIC COMPLET - SYSTÈME DE CANDIDATURES
+
+## 🔍 ANALYSE SYSTÉMATIQUE
+
+### 1. VÉRIFICATION DE LA BASE DE DONNÉES
+
+#### Structure de la table candidatures

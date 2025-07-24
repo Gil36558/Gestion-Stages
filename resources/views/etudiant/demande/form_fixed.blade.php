@@ -221,16 +221,38 @@
         color: var(--text-primary);
     }
 
+    /* Section binôme - CSS amélioré */
     .binome-section {
         background: var(--background-alt);
         border-radius: 12px;
         padding: 1.5rem;
         margin-top: 1rem;
-        display: none;
+        display: none !important; /* Force le masquage par défaut */
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
     }
 
     .binome-section.show {
-        display: block;
+        display: block !important; /* Force l'affichage */
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    /* Animation pour une meilleure UX */
+    .binome-section.show {
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     @media (max-width: 768px) {
@@ -319,11 +341,11 @@
                         <div class="form-group">
                             <label class="form-label">Mode de stage *</label>
                             <div class="radio-group">
-                                <label class="radio-option">
+                                <label class="radio-option" id="radio-solo">
                                     <input type="radio" name="mode" value="solo" {{ old('mode') === 'solo' ? 'checked' : '' }} required>
                                     <span>Stage individuel</span>
                                 </label>
-                                <label class="radio-option">
+                                <label class="radio-option" id="radio-binome">
                                     <input type="radio" name="mode" value="binome" {{ old('mode') === 'binome' ? 'checked' : '' }} required>
                                     <span>Stage en binôme</span>
                                 </label>
@@ -333,8 +355,9 @@
                             @enderror
                         </div>
 
+                        <!-- Section binôme avec ID unique -->
                         <div class="binome-section" id="binome-section">
-                            <!-- Message d'information -->
+                            <!-- Message d'information amélioré -->
                             <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4 rounded-r-lg">
                                 <div class="flex">
                                     <div class="flex-shrink-0">
@@ -344,6 +367,9 @@
                                         <p class="text-sm text-blue-700">
                                             <strong>Important :</strong> Votre binôme doit d'abord avoir un compte dans le système. 
                                             Assurez-vous qu'il/elle s'est déjà inscrit(e) avec l'email et le nom que vous allez renseigner ci-dessous.
+                                        </p>
+                                        <p class="text-xs text-blue-600 mt-2">
+                                            💡 Si votre binôme n'a pas encore de compte, demandez-lui de s'inscrire d'abord sur la plateforme.
                                         </p>
                                     </div>
                                 </div>
@@ -375,7 +401,7 @@
                                 </div>
                             </div>
 
-                            <!-- Bouton de vérification -->
+                            <!-- Bouton de vérification amélioré -->
                             <div class="mt-4">
                                 <button type="button" id="verifier-binome" class="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors">
                                     <i class="fas fa-search mr-2"></i>
@@ -587,219 +613,51 @@
 
     // Attendre que le DOM soit complètement chargé
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('🚀 Initialisation du système de binôme');
+        console.log('🚀 Script de gestion du binôme initialisé');
 
-        // Gestion du mode binôme - Version corrigée
+        // Gestion du mode binôme - Version améliorée avec debug
         const modeRadios = document.querySelectorAll('input[name="mode"]');
         const binomeSection = document.getElementById('binome-section');
         const emailBinome = document.getElementById('email_binome');
         const nomBinome = document.getElementById('nom_binome');
 
-        console.log('Éléments trouvés:', {
-            radios: modeRadios.length,
-            section: !!binomeSection,
-            email: !!emailBinome,
-            nom: !!nomBinome
+        console.log('📋 Éléments trouvés:', {
+            modeRadios: modeRadios.length,
+            binomeSection: !!binomeSection,
+            emailBinome: !!emailBinome,
+            nomBinome: !!nomBinome
         });
 
         if (modeRadios.length > 0 && binomeSection) {
-            modeRadios.forEach(radio => {
+            modeRadios.forEach((radio, index) => {
+                console.log(`📻 Radio ${index + 1}: ${radio.value}`);
+                
                 radio.addEventListener('change', function() {
-                    console.log('Mode changé vers:', this.value);
+                    console.log(`🔄 Changement de mode: ${this.value}`);
                     
                     if (this.value === 'binome') {
-                        console.log('Affichage section binôme');
-                        binomeSection.style.display = 'block';
+                        console.log('👥 Affichage de la section binôme');
                         binomeSection.classList.add('show');
                         
-                        if (emailBinome) emailBinome.setAttribute('required', 'required');
-                        if (nomBinome) nomBinome.setAttribute('required', 'required');
+                        if (emailBinome) {
+                            emailBinome.setAttribute('required', 'required');
+                            console.log('✅ Email binôme requis');
+                        }
+                        if (nomBinome) {
+                            nomBinome.setAttribute('required', 'required');
+                            console.log('✅ Nom binôme requis');
+                        }
                     } else {
-                        console.log('Masquage section binôme');
-                        binomeSection.style.display = 'none';
+                        console.log('👤 Masquage de la section binôme');
                         binomeSection.classList.remove('show');
                         
                         if (emailBinome) {
                             emailBinome.removeAttribute('required');
                             emailBinome.value = '';
+                            console.log('❌ Email binôme non requis et vidé');
                         }
                         if (nomBinome) {
                             nomBinome.removeAttribute('required');
                             nomBinome.value = '';
+                            console.log('❌ Nom binôme non requis et vidé');
                         }
-                        
-                        // Réinitialiser le résultat de vérification
-                        const verificationResult = document.getElementById('verification-result');
-                        if (verificationResult) {
-                            verificationResult.innerHTML = '';
-                        }
-                    }
-                    
-                    // Mise à jour visuelle des options radio
-                    document.querySelectorAll('.radio-option').forEach(option => {
-                        option.classList.remove('active');
-                    });
-                    this.closest('.radio-option').classList.add('active');
-                });
-            });
-
-            // Initialisation au chargement
-            const checkedRadio = document.querySelector('input[name="mode"]:checked');
-            if (checkedRadio) {
-                console.log('Radio déjà sélectionné:', checkedRadio.value);
-                checkedRadio.dispatchEvent(new Event('change'));
-            } else {
-                console.log('Aucun radio sélectionné, masquage par défaut');
-                binomeSection.style.display = 'none';
-            }
-        } else {
-            console.error('Éléments manquants pour le système de binôme');
-        }
-    });
-
-    // Vérification du binôme
-    const verifierBinomeBtn = document.getElementById('verifier-binome');
-    const verificationResult = document.getElementById('verification-result');
-
-    if (verifierBinomeBtn) {
-        verifierBinomeBtn.addEventListener('click', function() {
-            const email = emailBinome.value.trim();
-            const nom = nomBinome.value.trim();
-
-            if (!email || !nom) {
-                verificationResult.innerHTML = `
-                    <div class="text-red-600">
-                        <i class="fas fa-exclamation-triangle mr-1"></i>
-                        Veuillez renseigner l'email et le nom du binôme
-                    </div>
-                `;
-                return;
-            }
-
-            // Afficher le loading
-            this.disabled = true;
-            this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Vérification...';
-            verificationResult.innerHTML = '';
-
-            // Appel AJAX réel pour vérifier le binôme
-            fetch('{{ route("demandes.verifier-binome") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    email: email,
-                    nom: nom
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    verificationResult.innerHTML = `
-                        <div class="text-green-600">
-                            <i class="fas fa-check-circle mr-1"></i>
-                            ${data.message}
-                        </div>
-                    `;
-                } else {
-                    verificationResult.innerHTML = `
-                        <div class="text-red-600">
-                            <i class="fas fa-times-circle mr-1"></i>
-                            ${data.message}
-                        </div>
-                    `;
-                }
-            })
-            .catch(error => {
-                console.error('Erreur:', error);
-                verificationResult.innerHTML = `
-                    <div class="text-red-600">
-                        <i class="fas fa-exclamation-triangle mr-1"></i>
-                        Erreur lors de la vérification. Veuillez réessayer.
-                    </div>
-                `;
-            })
-            .finally(() => {
-                // Restaurer le bouton
-                this.disabled = false;
-                this.innerHTML = '<i class="fas fa-search mr-2"></i>Vérifier l\'existence du binôme';
-            });
-        });
-    }
-
-    // Gestion de l'upload de fichiers
-    const fileInputs = document.querySelectorAll('input[type="file"]');
-    fileInputs.forEach(input => {
-        input.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            const label = this.nextElementSibling;
-            
-            if (file) {
-                const fileName = file.name;
-                const fileSize = (file.size / 1024 / 1024).toFixed(2);
-                const icon = label.querySelector('i');
-                const textContainer = label.querySelector('.text-center');
-                
-                textContainer.innerHTML = `
-                    <i class="fas fa-check-circle text-3xl text-green-500 mb-2"></i>
-                    <p class="text-sm text-gray-600">${fileName}</p>
-                    <p class="text-xs text-gray-400">${fileSize} MB</p>
-                `;
-                label.style.borderColor = '#10b981';
-                label.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
-            }
-        });
-    });
-
-    // Validation des dates
-    const dateDebut = document.getElementById('date_debut_souhaitee');
-    const dateFin = document.getElementById('date_fin_souhaitee');
-    const dateDisponible = document.getElementById('date_debut_disponible');
-
-    if (dateDebut && dateFin) {
-        dateDebut.addEventListener('change', function() {
-            dateFin.min = this.value;
-            if (dateFin.value && dateFin.value < this.value) {
-                dateFin.value = this.value;
-            }
-        });
-    }
-
-    // Validation du formulaire
-    document.getElementById('demandeForm').addEventListener('submit', function(e) {
-        const requiredFields = this.querySelectorAll('[required]');
-        let isValid = true;
-
-        requiredFields.forEach(field => {
-            if (!field.value.trim() && !field.files?.length) {
-                field.classList.add('is-invalid');
-                isValid = false;
-            } else {
-                field.classList.remove('is-invalid');
-            }
-        });
-
-        if (!isValid) {
-            e.preventDefault();
-            const firstError = document.querySelector('.is-invalid');
-            if (firstError) {
-                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                firstError.focus();
-            }
-        }
-    });
-
-    // Validation en temps réel
-    const inputs = document.querySelectorAll('input, select, textarea');
-    inputs.forEach(input => {
-        input.addEventListener('blur', function() {
-            if (this.hasAttribute('required') && !this.value.trim() && !this.files?.length) {
-                this.classList.add('is-invalid');
-            } else {
-                this.classList.remove('is-invalid');
-            }
-        });
-    });
-</script>
-@endpush
