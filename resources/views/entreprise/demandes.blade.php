@@ -395,14 +395,14 @@
                     </a>
                     
                     @if($candidature->statut === 'en attente')
-                        <form method="POST" action="{{ route('candidatures.approve', $candidature) }}" style="display: inline;">
+                        <form method="POST" action="{{ route('entreprise.candidatures.offres.approve', $candidature) }}" style="display: inline;">
                             @csrf
                             <button type="submit" class="btn btn-success" onclick="return confirm('Accepter cette candidature ?')">
                                 <i class="fas fa-check"></i> Accepter
                             </button>
                         </form>
                         
-                        <form method="POST" action="{{ route('candidatures.reject', $candidature) }}" style="display: inline;">
+                        <form method="POST" action="{{ route('entreprise.candidatures.offres.reject', $candidature) }}" style="display: inline;">
                             @csrf
                             <button type="submit" class="btn btn-danger" onclick="return confirm('Refuser cette candidature ?')">
                                 <i class="fas fa-times"></i> Refuser

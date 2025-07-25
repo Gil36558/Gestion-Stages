@@ -44,8 +44,7 @@ return new class extends Migration
     {
         Schema::table('candidatures', function (Blueprint $table) {
             $table->dropColumn([
-                'message',
-                'informations_complementaires', 
+                'message', 
                 'date_debut_disponible',
                 'duree_souhaitee',
                 'competences',

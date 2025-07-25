@@ -274,13 +274,14 @@ class CandidatureController extends Controller
             return back()->with('error', 'Cette candidature a déjà été traitée.');
         }
 
+        // Rendre le motif optionnel
         $validated = $request->validate([
-            'motif_refus' => 'required|string|max:1000',
+            'motif_refus' => 'nullable|string|max:1000',
         ]);
 
         $candidature->update([
             'statut' => 'refusée',
-            'motif_refus' => $validated['motif_refus'],
+            'motif_refus' => $validated['motif_refus'] ?? 'Candidature refusée par l\'entreprise',
             'date_reponse' => now(),
         ]);
 

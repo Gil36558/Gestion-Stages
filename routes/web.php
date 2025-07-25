@@ -127,8 +127,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('/entreprise/demandes/{demande}/reject', [EntrepriseController::class, 'rejectDemandeStage'])->name('entreprise.demandes.reject');
 
         // Actions sur les candidatures aux offres (nouveau système)
-        Route::patch('/entreprise/candidatures-offres/{candidature}/approve', [CandidatureController::class, 'approve'])->name('entreprise.candidatures.offres.approve');
-        Route::patch('/entreprise/candidatures-offres/{candidature}/reject', [CandidatureController::class, 'reject'])->name('entreprise.candidatures.offres.reject');
+        Route::post('/entreprise/candidatures-offres/{candidature}/approve', [CandidatureController::class, 'approve'])->name('entreprise.candidatures.offres.approve');
+        Route::post('/entreprise/candidatures-offres/{candidature}/reject', [CandidatureController::class, 'reject'])->name('entreprise.candidatures.offres.reject');
 
         // Stages de l'entreprise
         Route::prefix('entreprise/stages')->group(function () {

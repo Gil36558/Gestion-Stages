@@ -414,7 +414,7 @@
                     <!-- Actions -->
                     <div class="candidature-actions">
                         @if($candidature->statut === 'en attente')
-                            <form method="POST" action="{{ route('entreprise.candidatures.approve', $candidature) }}" 
+                            <form method="POST" action="{{ route('entreprise.candidatures.offres.approve', $candidature) }}" 
                                   style="display: inline;">
                                 @csrf
                                 @method('PATCH')

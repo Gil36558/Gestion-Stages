@@ -126,7 +126,7 @@
                     <div class="bg-white rounded-lg shadow-sm border p-6">
                         <h2 class="text-lg font-semibold text-gray-900 mb-4">Actions</h2>
                         <div class="flex space-x-4">
-                            <form action="{{ route('candidatures.approve', $candidature) }}" method="POST" class="inline">
+                            <form action="{{ route('entreprise.candidatures.offres.approve', $candidature) }}" method="POST" class="inline">
                                 @csrf
                                 <button type="submit" 
                                         class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
@@ -273,7 +273,7 @@
     <div id="reject-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
         <div class="flex items-center justify-center min-h-screen p-4">
             <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
-                <form action="{{ route('candidatures.reject', $candidature) }}" method="POST">
+                <form action="{{ route('entreprise.candidatures.offres.reject', $candidature) }}" method="POST">
                     @csrf
                     <div class="px-6 py-4 border-b">
                         <h3 class="text-lg font-semibold text-gray-900">Refuser la candidature</h3>

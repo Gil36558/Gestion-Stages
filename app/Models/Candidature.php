@@ -144,4 +144,11 @@ class Candidature extends Model
     {
         return $this->lettre ? asset('storage/' . $this->lettre) : null;
     }
+
+    public function etudiant()
+    {
+        return $this->belongsTo(User::class, 'user_id'); 
+    }
+
 }
+
