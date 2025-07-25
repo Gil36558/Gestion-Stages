@@ -767,6 +767,22 @@
         });
         document.querySelector(`input[value="${selectedRole}"]`).closest('.role-option').classList.add('active');
         
+        // Désactiver la validation des champs cachés
+        const allInputs = document.querySelectorAll('input, select, textarea');
+        allInputs.forEach(input => {
+            const isInHiddenSection = input.closest('.hidden');
+            if (isInHiddenSection) {
+                input.removeAttribute('required');
+                input.disabled = true; // Désactiver complètement les champs cachés
+                input.classList.remove('is-invalid', 'is-valid');
+            } else {
+                input.disabled = false; // Réactiver les champs visibles
+                if (input.hasAttribute('data-validation') && input.dataset.validation.includes('required')) {
+                    input.setAttribute('required', 'required');
+                }
+            }
+        });
+        
         const visibleFields = selectedRole === 'etudiant' ? studentFields : enterpriseFields;
         visibleFields.querySelectorAll('.field-group').forEach((field, index) => {
             field.style.animationDelay = `${index * 0.05}s`;
@@ -905,6 +921,7 @@
         
         let isFormValid = true;
         inputs.forEach(input => {
+            // Ne valider que les champs visibles et requis
             if (input.hasAttribute('required') && !input.closest('.hidden')) {
                 validateField(input);
                 if (input.classList.contains('is-invalid')) isFormValid = false;
@@ -924,7 +941,7 @@
             this.submit();
         } else {
             showToast('Veuillez corriger les erreurs dans le formulaire', 'error');
-            const firstError = document.querySelector('.is-invalid');
+            const firstError = document.querySelector('.is-invalid:not(.hidden *)');
             if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     });

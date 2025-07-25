@@ -29,28 +29,32 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        // Règles de base communes
         $baseRules = [
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'role' => ['required', 'in:etudiant,entreprise'],
-            'telephone' => ['required', 'string', 'max:255'],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ];
 
         if ($request->role === 'etudiant') {
             $rules = array_merge($baseRules, [
+                'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
+                'telephone' => ['required', 'string', 'max:255'],
                 'prenom' => ['required', 'string', 'max:255'],
                 'nom' => ['required', 'string', 'max:255'],
                 'universite' => ['required', 'string', 'max:255'], // sera mappé sur ecole
                 'domaine' => ['required', 'string', 'max:255'],    // sera mappé sur filiere
+                'niveau' => ['required', 'string', 'max:255'],     // niveau d'études
                 'matricule' => ['nullable', 'string', 'max:255'],
                 'date_naissance' => ['nullable', 'date'],
             ]);
         } else {
             $rules = array_merge($baseRules, [
+                'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
+                'telephone' => ['required', 'string', 'max:255'],
                 'nom_entreprise' => ['required', 'string', 'max:255'],
-                'secteur' => ['nullable', 'string', 'max:255'],
-                'taille' => ['nullable', 'string', 'max:255'], // ignoré car pas en BDD
-                'adresse' => ['nullable', 'string', 'max:255'],
+                'secteur' => ['required', 'string', 'max:255'],
+                'taille' => ['required', 'string', 'max:255'], // ignoré car pas en BDD
+                'adresse' => ['required', 'string', 'max:255'],
                 'site_web' => ['nullable', 'string', 'max:255'],
                 'description' => ['nullable', 'string'],
             ]);
@@ -65,9 +69,12 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => $request->role,
+            'telephone' => $request->telephone,
+            'adresse' => $request->adresse ?? null,
             'matricule' => $request->matricule ?? null,
             'filiere' => $request->domaine ?? null,
             'ecole' => $request->universite ?? null,
+            'niveau' => $request->niveau ?? null,
             'date_naissance' => $request->date_naissance ?? null,
         ]);
 
